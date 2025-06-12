@@ -1,0 +1,38 @@
+import { StoreCreateForm } from "@/components/store-create-form";
+import { getCookie } from "cookies-next";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
+
+async function StoreCreatePage() {
+    const authToken = await getCookie("auth", { cookies });
+    
+    const h = await headers();
+    const userString = h.get("x-user");
+    const user = parseUser(String(userString));
+    
+    if (!authToken) {
+        return redirect("login");
+    }
+
+    if (user && user.type !== "store") {
+        return redirect("/store");
+    }
+
+    return (
+        <main className="min-h-screen flex flex-col items-center justify-center p-4 md:p-24 bg-gradient-to-b from-white to-gray-50">
+            <div className="w-full max-w-md">
+                <StoreCreateForm />
+            </div>
+        </main>
+    );
+}
+
+function parseUser(str: string) {
+    try {
+        return JSON.parse(str);
+    } catch (error) {
+        return null;
+    }
+}
+
+export default StoreCreatePage;
