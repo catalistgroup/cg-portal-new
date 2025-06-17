@@ -9,15 +9,9 @@ export class CatalogController {
 
     try {
       const catalogs = await prisma.catalog.findMany({
-        where: {
-          store: {
-            user_id: userId,
-          },
-        },
-        include: {
-          store: true,
-        },
+        where: { selling_status: true, profitable: true },
       });
+
       res.json(catalogs);
     } catch (error) {
       console.error(error);

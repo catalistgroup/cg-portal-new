@@ -57,6 +57,7 @@ model Catalog {
   margin         String? // nullable
   roi            Float? // nullable (real)
   selling_status Boolean @default(false)
+  profitable     Boolean @default(false)
   supplier       String? // nullable
   image_url      String? // nullable
 
