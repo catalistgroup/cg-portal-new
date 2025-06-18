@@ -39,7 +39,8 @@
     "express": "^5.1.0",
     "jose": "^6.0.11",
     "morgan": "^1.10.0",
-    "nodemailer": "^7.0.3"
+    "nodemailer": "^7.0.3",
+    "pg": "^8.16.0"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"
