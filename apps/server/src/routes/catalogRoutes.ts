@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { CatalogController } from "../controllers/CatalogController";
+import { asyncHandler } from "../utils/asyncHandler";
 
 const router = Router();
 const catalogController = new CatalogController();
 
-// router.get("/", authenticate, (req, res) =>
-//   catalogController.getCatalogs(req, res),
-// );
+router.get(
+  "/live-catalog",
+  asyncHandler(catalogController.getCatalogs.bind(catalogController)),
+);
 
 router.get("/store/:storeId", catalogController.getCatalogsByStoreId);
 

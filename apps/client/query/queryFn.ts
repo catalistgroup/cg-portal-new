@@ -1,5 +1,6 @@
 import api from "@/lib/api";
 import qs from "query-string";
+import APIConfiguration from '@/lib/endpoints';
 
 export const productsByStoreId = (
   storeId: string,
@@ -15,9 +16,10 @@ export const productsByStoreId = (
     .then((v) => v.data);
 
 export const getCatalogs = () =>
-  api
-    .get("https://catalistgroup.app.n8n.cloud/webhook/prod-live-catalog")
-    .then((v) => v.data);
+  api.get(APIConfiguration.GET_ALL_LIVE_CATALOG).then((v) => {
+    console.log('getCatalogs Function --->', v);
+    return v.data;
+  });
 
 export const overviewByStoreId = (
   storeId: string,
