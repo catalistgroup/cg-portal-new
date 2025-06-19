@@ -12,6 +12,11 @@ router.get(
 
 router.get("/store/:storeId", catalogController.getCatalogsByStoreId);
 
+router.post(
+  "/update-catalog-product",
+  asyncHandler(catalogController.updateCatalogProduct.bind(catalogController)),
+);
+
 // router.get("/:id", authenticate, (req, res) =>
 //   catalogController.getCatalogById(req, res),
 // );

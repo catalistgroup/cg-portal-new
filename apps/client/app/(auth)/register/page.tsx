@@ -2,7 +2,7 @@ import { RegisterForm } from "@/components/register-form";
 import { getCookie } from "cookies-next";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { use } from "react";
+import { ADMIN_EMAILS } from "@/constants";
 
 async function RegisterPage() {
     const authToken = await getCookie("auth", { cookies });
@@ -15,8 +15,7 @@ async function RegisterPage() {
         return redirect("/login");
     }
 
-    const allowedEmails = ["mazaharulkabir@gmail.com", "jahidsite0@gmail.com"];
-    if (!allowedEmails.includes(user.email)) {
+    if (!ADMIN_EMAILS.includes(user.email)) {
         return redirect("/login");
     }
 
