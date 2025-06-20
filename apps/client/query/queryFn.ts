@@ -17,7 +17,6 @@ export const productsByStoreId = (
 
 export const getCatalogs = () =>
   api.get(APIConfiguration.GET_ALL_LIVE_CATALOG).then((v) => {
-    console.log('getCatalogs Function --->', v);
     return v.data;
   });
 

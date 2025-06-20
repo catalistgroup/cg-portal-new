@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../configs/database";
 import HttpError from "../utils/HttpError";
+import { calcWholesalePrice } from "../utils/catalog-helper-function";
 
 export class CatalogController {
   async getCatalogs(req: Request, res: Response) {
@@ -16,6 +17,73 @@ export class CatalogController {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to fetch catalogs" });
+    }
+  }
+
+  async updateCatalogProduct(req: Request, res: Response) {
+    try {
+      const asin = req.body?.asin;
+      const selling_status = req.body?.selling_status;
+      const buying_price = req.body?.buying_price;
+      const buybox_price = req.body?.buybox_price;
+      const amazon_fee = req.body?.amazon_fee;
+
+      if (!asin || typeof asin !== "string") {
+        return res.status(400).json({ error: "Invalid or missing asin" });
+      }
+
+      if (buybox_price === undefined || isNaN(Number(buybox_price))) {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing buybox price" });
+      }
+
+      if (amazon_fee === undefined || isNaN(Number(amazon_fee))) {
+        return res.status(400).json({ error: "Invalid or missing amazon fee" });
+      }
+
+      if (typeof selling_status !== "boolean") {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing selling status" });
+      }
+
+      if (buying_price !== undefined && isNaN(Number(buying_price))) {
+        return res.status(400).json({ error: "Invalid buying price" });
+      }
+
+      const newCalculatedData = calcWholesalePrice({
+        asin,
+        buying_price,
+        buybox_price,
+        amazon_fee,
+      });
+
+      // Update the catalog product in the database
+      const updatedCatalog = await prisma.catalog.update({
+        where: { asin },
+        data: {
+          selling_status,
+          buying_price,
+          profitable: newCalculatedData.profitable,
+          selling_price: newCalculatedData.selling_price?.toString?.(),
+          moq: newCalculatedData.moq || 0,
+          buybox_price: newCalculatedData.buybox_price?.toString?.(),
+          profit: newCalculatedData.profit?.toString?.(),
+          margin: newCalculatedData.margin?.toString?.(),
+          roi: !!newCalculatedData.roi
+            ? parseFloat(newCalculatedData.roi)
+            : null,
+        },
+      });
+
+      res.status(200).json({
+        message: "Catalog updated successfully",
+        data: updatedCatalog,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update catalog product" });
     }
   }
 

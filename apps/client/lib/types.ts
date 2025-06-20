@@ -43,7 +43,7 @@ export type CatalogType = {
   upc?: string | null;
   supplier?: string | null;
   moq: number | null; // minimum order quantity, can be null
-  line_total?: number; 
+  line_total?: number;
   quantity?: number; // nullable, used in purchase orders
   buybox_price?: string | null;
   amazon_fee?: string | null; // renamed from referral_fee
@@ -63,6 +63,9 @@ export type CatalogType = {
   walmart_profit?: string; // nullable
   walmart_margin?: string; // nullable
   walmart_roi?: string; // nullable
+
+  // For indexing optional
+  rowIndex?: number;
 };
 
 export type PurchaseOrderType = {
