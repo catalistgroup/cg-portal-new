@@ -3,7 +3,6 @@ import api from '@/lib/api';
 import { getCookie } from 'cookies-next';
 import { cookies, headers } from 'next/headers';
 import { parseUser } from '@/utils/helper-function';
-import { ADMIN_EMAILS } from '@/constants';
 
 type Props = {
   params: Promise<{ storeId: string }>;
@@ -32,10 +31,10 @@ async function ProductAnalysisPage({ params }: Props) {
   const stores = await getStores();
 
   const h = await headers();
-  const userString = h.get("x-user");
+  const userString = h.get('x-user');
   const user = parseUser(String(userString));
 
-  const isAdmin = ADMIN_EMAILS.includes(user?.email);
+  const isAdmin = user?.is_superuser;
 
   return (
     <div className="p-4">

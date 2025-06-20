@@ -6,11 +6,13 @@ import { calcWholesalePrice } from "../utils/catalog-helper-function";
 export class CatalogController {
   async getCatalogs(req: Request, res: Response) {
     const userId = req.user?.id;
-    if (!userId) return res.status(400).json({ error: "User ID missing" });
 
+    const isAdmin = req.user?.isAdmin;
+
+    if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
       const catalogs = await prisma.catalog.findMany({
-        where: { selling_status: true, profitable: true },
+        where: isAdmin ? undefined : { selling_status: true, profitable: true },
       });
 
       res.json(catalogs);
