@@ -84,6 +84,7 @@ export class AuthController {
       name: user.name,
       email: user.email,
       type: user?.type,
+      isAdmin: user?.is_superuser || false,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("5days")
@@ -122,9 +123,9 @@ export class AuthController {
         throw new HttpError("Invalid code", 400);
       }
     } catch (error: any) {
-      if (error.message === 'Code has expired') {
+      if (error.message === "Code has expired") {
         throw new HttpError("Code has expired", 400);
-      } else if (error.message === 'Invalid code') {
+      } else if (error.message === "Invalid code") {
         throw new HttpError("Invalid code", 400);
       }
       throw new HttpError("Verification failed", 400);
