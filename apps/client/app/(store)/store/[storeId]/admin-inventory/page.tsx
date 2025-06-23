@@ -1,8 +1,8 @@
-import { ProductAnalysis } from '@/components/product-analysis/product-analysis';
 import api from '@/lib/api';
 import { getCookie } from 'cookies-next';
 import { cookies, headers } from 'next/headers';
 import { parseUser } from '@/utils/helper-function';
+import { ModifyInventory } from '@/components/product-analysis/modify-inventory';
 
 type Props = {
   params: Promise<{ storeId: string }>;
@@ -34,9 +34,11 @@ async function ProductAnalysisPage({ params }: Props) {
   const userString = h.get('x-user');
   const user = parseUser(String(userString));
 
+  const isAdmin = user?.is_superuser;
+
   return (
     <div className="p-4">
-      <ProductAnalysis storeId={storeId} stores={stores} />
+      <ModifyInventory storeId={storeId} stores={stores} isAdmin={isAdmin} />
     </div>
   );
 }

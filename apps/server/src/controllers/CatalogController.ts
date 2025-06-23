@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import prisma from "../configs/database";
 import HttpError from "../utils/HttpError";
 import { calcWholesalePrice } from "../utils/catalog-helper-function";
@@ -7,13 +8,27 @@ export class CatalogController {
   async getCatalogs(req: Request, res: Response) {
     const userId = req.user?.id;
 
+    // @ts-ignore
     const isAdmin = req.user?.isAdmin;
 
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
-      const catalogs = await prisma.catalog.findMany({
-        where: isAdmin ? undefined : { selling_status: true, profitable: true },
-      });
+      const catalogs = await prisma.$queryRaw`
+        WITH brand_order AS (
+         SELECT 
+          name, 
+           last_item_inserted_at,
+            ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
+         FROM "Brand"
+        )
+        SELECT 
+          c.*, 
+          b.last_item_inserted_at
+        FROM "Catalog" c
+        JOIN brand_order b ON c.brand = b.name
+        WHERE ${isAdmin ? true : Prisma.sql`c.selling_status = TRUE AND c.profitable = TRUE`}
+        ORDER BY b.sort_order, c.created_at DESC
+        `;
 
       res.json(catalogs);
     } catch (error) {
@@ -211,6 +226,21 @@ export class CatalogController {
       console.error(error);
       if (error instanceof HttpError) throw error;
       throw new HttpError("Failed to create catalog", 500);
+    }
+  }
+
+  async getAllBrands(req: Request, res: Response) {
+    try {
+      const brands = await prisma.brand.findMany({
+        select: { id: true, name: true },
+        orderBy: {
+          name: "asc",
+        },
+      });
+      res.status(200).json(brands);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to retrieve brands" });
     }
   }
 }

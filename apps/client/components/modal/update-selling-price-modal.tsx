@@ -66,7 +66,6 @@ export default function UpdateSellingPriceModal({
             <Select
               value={isActive.toString()}
               onValueChange={(value) => setIsActive(value === 'true')}
-              //  className="col-span-3"
             >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -50,13 +50,14 @@ export function StoreHeader({ storeId, stores, user }: Props) {
 
   const isDashboard = pathname === `/store/${storeId}`;
   const isAnalysis = pathname === `/store/${storeId}/analysis`;
+  const isModifyInventory = pathname === `/store/${storeId}/admin-inventory`;
   const isOrders = pathname === `/store/${storeId}/orders`;
   const storeLimit = 3;
   const visibleStores = showAllStores ? stores : stores.slice(0, storeLimit);
   const hasMoreStores = stores.length > storeLimit;
 
   const handleLogout = () => {
-    router.push("/logout");
+    router.push('/logout');
   };
 
   const handleStoreSelect = (storeId: string) => {
@@ -117,29 +118,43 @@ export function StoreHeader({ storeId, stores, user }: Props) {
     </div>
   );
 
-  function renderNavigationButtons(mode = "desktop") {
-    const baseClass = "rounded-full text-sm w-full md:w-auto";
+  function renderNavigationButtons(mode = 'desktop') {
+    const baseClass = 'rounded-full text-sm w-full md:w-auto';
     return (
       <>
-        {user?.type === "store" && <Button
-          variant="outline"
-          className={`${baseClass} ${isDashboard ? "bg-black text-white" : "text-gray-600"}`}
-          onClick={() => router.push(`/store/${storeId}`)}
-        >
-          <Home className="h-4 w-4 mr-2" />
-          Dashboard
-        </Button>}
+        {user?.type === 'store' && (
+          <Button
+            variant="outline"
+            className={`${baseClass} ${isDashboard ? 'bg-black text-white' : 'text-gray-600'}`}
+            onClick={() => router.push(`/store/${storeId}`)}
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Dashboard
+          </Button>
+        )}
+        {user?.is_superuser && (
+          <Button
+            variant="outline"
+            className={`${baseClass} ${isModifyInventory ? 'bg-black text-white' : 'text-gray-600'}`}
+            onClick={() =>
+              (window.location.href = `/store/${storeId}/admin-inventory`)
+            }
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Modify Inventory
+          </Button>
+        )}
         <Button
           variant="outline"
-          className={`${baseClass} ${isAnalysis ? "bg-black text-white" : "text-gray-600"}`}
-          onClick={() => window.location.href = `/store/${storeId}/analysis`}
+          className={`${baseClass} ${isAnalysis ? 'bg-black text-white' : 'text-gray-600'}`}
+          onClick={() => (window.location.href = `/store/${storeId}/analysis`)}
         >
           <BarChart3 className="h-4 w-4 mr-2" />
           Master Catalogue
         </Button>
         <Button
           variant="outline"
-          className={`${baseClass} ${isOrders ? "bg-black text-white" : "text-gray-600"}`}
+          className={`${baseClass} ${isOrders ? 'bg-black text-white' : 'text-gray-600'}`}
           onClick={() => router.push(`/store/${storeId}/orders`)}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
@@ -284,7 +299,7 @@ export function StoreHeader({ storeId, stores, user }: Props) {
                   className={`flex items-center space-x-2 rounded-lg border p-2.5 transition-all ${selectedStore === String(store.id)
                     ? "border-primary bg-primary/5 shadow-sm"
                     : "hover:border-gray-300 hover:bg-gray-50"
-                    }`}
+                  }`}
                 >
                   <RadioGroupItem
                     value={String(store.id)}
@@ -365,5 +380,6 @@ type Props = {
     name: string;
     email: string;
     type: "normal" | "store";
+    is_superuser: boolean;
   };
 };
