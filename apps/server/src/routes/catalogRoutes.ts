@@ -17,6 +17,11 @@ router.post(
   asyncHandler(catalogController.updateCatalogProduct.bind(catalogController)),
 );
 
+router.get(
+  "/get-brands",
+  asyncHandler(catalogController.getAllBrands.bind(catalogController)),
+);
+
 // router.get("/:id", authenticate, (req, res) =>
 //   catalogController.getCatalogById(req, res),
 // );

@@ -1,6 +1,6 @@
-import { CatalogType } from "@/lib/types";
-import { FilterState } from "./filter-components";
-import { useMemo } from "react";
+import { CatalogType } from '@/lib/types';
+import { FilterState } from './filter-components';
+import { useMemo } from 'react';
 
 function compareValue(
   itemValue: number,
@@ -8,15 +8,15 @@ function compareValue(
   filterValue: number
 ): boolean {
   switch (comparator) {
-    case ">=":
+    case '>=':
       return itemValue >= filterValue;
-    case "<=":
+    case '<=':
       return itemValue <= filterValue;
-    case ">":
+    case '>':
       return itemValue > filterValue;
-    case "<":
+    case '<':
       return itemValue < filterValue;
-    case "=":
+    case '=':
       return itemValue === filterValue;
     default:
       return true; // if unknown comparator, do not filter out
@@ -59,6 +59,11 @@ export function useFilteredCatalog(
         !isNaN(marginVal) &&
         !compareValue(Number(item.margin), filters.marginComparator, marginVal)
       ) {
+        return false;
+      }
+
+      // Check brand filter only if brand is valid
+      if (filters.brand && item.brand !== filters.brand.name) {
         return false;
       }
 
