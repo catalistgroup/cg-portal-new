@@ -1,5 +1,5 @@
-import api from "@/lib/api";
-import qs from "query-string";
+import api from '@/lib/api';
+import qs from 'query-string';
 import APIConfiguration from '@/lib/endpoints';
 
 export const productsByStoreId = (
@@ -9,7 +9,7 @@ export const productsByStoreId = (
   api
     .get(
       qs.stringifyUrl({
-        url: "/catalog/store/" + storeId,
+        url: '/catalog/store/' + storeId,
         query,
       })
     )
@@ -20,6 +20,11 @@ export const getCatalogs = () =>
     return v.data;
   });
 
+export const getAllBrands = () =>
+  api.get(APIConfiguration.GET_ALL_BRANDS).then((v) => {
+    return v.data;
+  });
+
 export const overviewByStoreId = (
   storeId: string,
   query?: Record<string, string>
@@ -27,7 +32,7 @@ export const overviewByStoreId = (
   api
     .get(
       qs.stringifyUrl({
-        url: "/overview/store/" + storeId,
+        url: '/overview/store/' + storeId,
         query,
       })
     )
@@ -40,7 +45,7 @@ export const purchaseOrdersByStoreId = (
   api
     .get(
       qs.stringifyUrl({
-        url: "/purchase-order/store/" + storeId,
+        url: '/purchase-order/store/' + storeId,
         query,
       })
     )
@@ -54,7 +59,7 @@ export const purchaseOrderBySAndOId = (
   api
     .get(
       qs.stringifyUrl({
-        url: "/purchase-order/" + orderId + "/store/" + storeId,
+        url: '/purchase-order/' + orderId + '/store/' + storeId,
         query,
       })
     )

@@ -13,6 +13,7 @@ import {
   Search,
   ShoppingCart,
   User,
+  SquarePen,
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CatalogType, StoreType } from '@/lib/types';
@@ -51,6 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { UpdateSellingPriceModal } from '@/components/modal';
 import APIConfiguration from '@/lib/endpoints';
 import { BrandType } from '@/types';
 
@@ -74,9 +76,10 @@ interface OrderFormState {
 type Props = {
   storeId: string;
   stores: StoreType[];
+  isAdmin: boolean;
 };
 
-export function ProductAnalysis({ storeId, stores }: Props) {
+export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -89,6 +92,10 @@ export function ProductAnalysis({ storeId, stores }: Props) {
     queryKey: ['brands'],
     queryFn: () => getAllBrands(),
   });
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editProductSelected, setEditProductSelected] =
+    useState<CatalogType | null>(null);
 
   const catalogColumns: ColumnDef<CatalogType>[] = [
     {
@@ -134,10 +141,19 @@ export function ProductAnalysis({ storeId, stores }: Props) {
         }).format(Number(getValue()));
       },
     },
+    {
+      accessorKey: 'buying_price',
+      header: 'Buying Price',
+      cell({ getValue }) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+        }).format(Number(getValue()));
+      },
+    },
     { accessorKey: 'asin', header: 'ASIN' },
     { accessorKey: 'upc', header: 'UPC/EAN' },
     { accessorKey: 'moq', header: 'MOQ' },
-
     {
       accessorKey: 'buybox_price',
       header: () => <div className="text-center">Amazon Buybox</div>,
@@ -180,6 +196,8 @@ export function ProductAnalysis({ storeId, stores }: Props) {
         }).format(Number(getValue()));
       },
     },
+    { accessorKey: 'profitable', header: 'Profitable' },
+    { accessorKey: 'selling_status', header: 'Selling Status' },
     {
       accessorKey: 'margin',
       header: 'Margin',
@@ -197,6 +215,66 @@ export function ProductAnalysis({ storeId, stores }: Props) {
       },
     },
   ];
+
+  if (isAdmin) {
+    catalogColumns.push({
+      accessorKey: 'edit',
+      header: 'Edit',
+      id: 'edit_column',
+      cell({ row }) {
+        return (
+          <SquarePen
+            className="w-4 h-4 cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => {
+              handleEdit(row.original, row.index);
+            }}
+          />
+        );
+      },
+    });
+  }
+
+  const handleEdit = (product: CatalogType, rowIndex: number) => {
+    setIsEditModalOpen(true);
+    setEditProductSelected({ ...product, rowIndex: rowIndex });
+  };
+
+  const handleEditSave = (data: {
+    buying_price: string;
+    selling_status: boolean;
+  }) => {
+    api
+      .post(APIConfiguration.POST_UPDATE_CATALOG_PRODUCT, {
+        ...editProductSelected,
+        ...data,
+      })
+      .then((res) => {
+        toast.success(res.data.message || 'Product updated successfully');
+        // Update the specific item in the local state to avoid re-loading the page
+        queryClient.setQueryData<CatalogType[]>(['catalogs'], (oldData) => {
+          if (!oldData) return [];
+
+          return oldData.map((item) =>
+            item.asin === editProductSelected?.asin
+              ? {
+                  ...res.data.data,
+                }
+              : item
+          );
+        });
+
+        handleEditClose();
+      })
+      .catch((err) => {
+        console.log('err', err);
+        toast.error('Failed to update product');
+      });
+  };
+
+  const handleEditClose = () => {
+    setIsEditModalOpen(false);
+    setEditProductSelected(null);
+  };
 
   const [selected, setSelected] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
@@ -1316,6 +1394,12 @@ export function ProductAnalysis({ storeId, stores }: Props) {
           </AlertDialogContent>
         </AlertDialog>
       )}
+      <UpdateSellingPriceModal
+        product={editProductSelected}
+        isOpen={isEditModalOpen}
+        onSavePress={handleEditSave}
+        onClosePress={handleEditClose}
+      />
     </div>
   );
 }

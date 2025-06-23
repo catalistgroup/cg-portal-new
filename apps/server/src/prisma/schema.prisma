@@ -3,25 +3,25 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Or your DB of choice: "mysql", "sqlite", etc.
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id         Int             @id @default(autoincrement())
-  name       String
-  email      String          @unique
-  password   String
-  phone      String?
-  type       String          @default("store")
-  is_superuser   Boolean?    @default(false)
-  is_active  Boolean         @default(true)
-  is_deleted Boolean         @default(false)
-  created_at DateTime        @default(now())
-  updated_at DateTime        @updatedAt
-  deleted_at DateTime?
-  stores     Store[]
-  orders     PurchaseOrder[]
+  id           Int             @id @default(autoincrement())
+  name         String
+  email        String          @unique
+  password     String
+  phone        String?
+  type         String          @default("store")
+  is_active    Boolean         @default(true)
+  is_deleted   Boolean         @default(false)
+  created_at   DateTime        @default(now())
+  updated_at   DateTime        @updatedAt
+  deleted_at   DateTime?
+  is_superuser Boolean?        @default(false)
+  orders       PurchaseOrder[]
+  stores       Store[]
 }
 
 model Store {
@@ -36,75 +36,70 @@ model Store {
   created_at  DateTime        @default(now())
   updated_at  DateTime        @updatedAt
   deleted_at  DateTime?
-  user        User            @relation(fields: [user_id], references: [id])
-  orders      PurchaseOrder[]
   catalogs    Catalog[]
+  orders      PurchaseOrder[]
+  user        User            @relation(fields: [user_id], references: [id])
 }
 
 model Catalog {
-  id             Int     @id @default(autoincrement())
-  asin           String  @unique
+  id             Int      @id @default(autoincrement())
+  asin           String   @unique
   name           String
   brand          String
   buying_price   String
   selling_price  String
-  sku            String? // nullable
-  upc            String? // nullable
-  moq            Int     @default(100)
-  buybox_price   String? // nullable
-  amazon_fee     String? // nullable
-  profit         String? // nullable
-  margin         String? // nullable
-  roi            Float? // nullable (real)
-  selling_status Boolean @default(false)
-  profitable     Boolean @default(false)
-  supplier       String? // nullable
-  image_url      String? // nullable
-
-  wfs_id         String? // nullable
-  walmart_buybox String? // nullable
-  walmart_fees   String? // nullable
-  walmart_profit String? // nullable
-  walmart_margin String? // nullable
-  walmart_roi    String? // nullable
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  store_id Int
-  store    Store @relation(fields: [store_id], references: [id])
+  sku            String?
+  upc            String?
+  moq            Int      @default(100)
+  buybox_price   String?
+  amazon_fee     String?
+  profit         String?
+  margin         String?
+  roi            Float?
+  selling_status Boolean  @default(false)
+  supplier       String?
+  image_url      String?
+  wfs_id         String?
+  walmart_buybox String?
+  walmart_fees   String?
+  walmart_profit String?
+  walmart_margin String?
+  walmart_roi    String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  store_id       Int
+  profitable     Boolean  @default(false)
+  store          Store    @relation(fields: [store_id], references: [id])
 }
 
 model PurchaseOrder {
-  id              Int      @id @default(autoincrement())
-  order_id        String?   @unique // Add this line - will store UUID
-  order_placed_at DateTime @default(now())
-  order_status    String   @default("received")
-  is_api_succeed  Boolean? @default(false)
-  is_draft        Boolean  @default(false)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  paymentMethod    String?   
-  prepRequired     String?   
-  ungateAssistance String?   
-  billingCountry   String?   
-  firstName        String?   
-  lastName         String?   
-  email            String?   
-  phone            String?   
-  company          String?   
-  storefront       String?   
-  street           String?   
-  city             String?   
-  state            String?   
-  zip              String?  
-
-  store_id Int
-  store    Store               @relation(fields: [store_id], references: [id])
-  user_id  Int
-  user     User                @relation(fields: [user_id], references: [id])
-  items    PurchaseOrderItem[]
+  id               Int                 @id @default(autoincrement())
+  order_placed_at  DateTime            @default(now())
+  order_status     String              @default("received")
+  is_draft         Boolean             @default(false)
+  created_at       DateTime            @default(now())
+  updated_at       DateTime            @updatedAt
+  paymentMethod    String?
+  prepRequired     String?
+  ungateAssistance String?
+  billingCountry   String?
+  firstName        String?
+  lastName         String?
+  email            String?
+  phone            String?
+  company          String?
+  storefront       String?
+  street           String?
+  city             String?
+  state            String?
+  zip              String?
+  store_id         Int
+  user_id          Int
+  order_id         String?             @unique
+  is_api_succeed   Boolean?            @default(false)
+  store            Store               @relation(fields: [store_id], references: [id])
+  user             User                @relation(fields: [user_id], references: [id])
+  items            PurchaseOrderItem[]
 }
 
 model PurchaseOrderItem {
@@ -119,4 +114,12 @@ model PurchaseOrderItem {
   supplier          String?
   purchase_order_id Int
   purchase_order    PurchaseOrder @relation(fields: [purchase_order_id], references: [id])
+}
+
+model Brand {
+  id               Int      @id @default(autoincrement())
+  name             String
+  last_item_inserted_at DateTime?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 }
