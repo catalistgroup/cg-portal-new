@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CatalogType, StoreType } from '@/lib/types';
-import { getAllBrands, getCatalogs } from '@/query/queryFn';
+import { getAllQualifiedBrands, getCatalogs } from '@/query/queryFn';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '../ui/datatable';
 import { SelectableTableWrapper } from '../selectable-table';
@@ -86,8 +86,8 @@ export function ProductAnalysis({ storeId, stores }: Props) {
   });
 
   const { data: brands = [] } = useQuery<BrandType[]>({
-    queryKey: ['brands'],
-    queryFn: () => getAllBrands(),
+    queryKey: ['qualified-brands'],
+    queryFn: () => getAllQualifiedBrands(),
   });
 
   const catalogColumns: ColumnDef<CatalogType>[] = [
