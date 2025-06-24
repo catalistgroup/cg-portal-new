@@ -22,6 +22,11 @@ router.get(
   asyncHandler(catalogController.getAllBrands.bind(catalogController)),
 );
 
+router.post(
+  "/bulk-catalog-update",
+  asyncHandler(catalogController.bulkBrandUpdate.bind(catalogController)),
+);
+
 // router.get("/:id", authenticate, (req, res) =>
 //   catalogController.getCatalogById(req, res),
 // );

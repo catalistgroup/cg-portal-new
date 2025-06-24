@@ -243,4 +243,63 @@ export class CatalogController {
       res.status(500).json({ message: "Failed to retrieve brands" });
     }
   }
+
+  async bulkBrandUpdate(req: Request, res: Response) {
+    try {
+      const { brand, sellingStatus } = req.body;
+
+      // Validate required fields
+      if (!brand || typeof brand !== "string") {
+        return res.status(400).json({
+          error: "Brand is required and must be a string",
+        });
+      }
+
+      if (typeof sellingStatus !== "boolean") {
+        return res.status(400).json({
+          error: "sellingStatus is required and must be a boolean",
+        });
+      }
+
+      // if (typeof profitableStatus !== "boolean") {
+      //   return res.status(400).json({
+      //     error: "profitableStatus is required and must be a boolean",
+      //   });
+      // }
+
+      // Check if brand exists in the Brand table
+      const brandExists = await prisma.brand.findFirst({
+        where: { name: brand },
+      });
+
+      if (!brandExists) {
+        return res.status(404).json({
+          error: `Brand '${brand}' not found`,
+        });
+      }
+
+      const updateResult = await prisma.catalog.updateMany({
+        where: {
+          brand: brand,
+        },
+        data: {
+          selling_status: sellingStatus,
+          updated_at: new Date(),
+        },
+      });
+
+      res.status(200).json({
+        message: `Successfully updated ${updateResult.count} catalog's for brand '${brand}'`,
+        brand: brand,
+        sellingStatus: sellingStatus,
+        updatedCount: updateResult.count,
+        // profitableStatus: profitableStatus,
+      });
+    } catch (error) {
+      console.error("Error in bulkBrandUpdate:", error);
+      res.status(500).json({
+        error: "Failed to update catalogs",
+      });
+    }
+  }
 }
