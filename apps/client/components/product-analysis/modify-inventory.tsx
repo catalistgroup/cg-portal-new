@@ -252,14 +252,18 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   const handleEditSave = (data: {
     buying_price: string;
     selling_status: boolean;
+    force_profitable_manual: boolean;
+    profitable: boolean;
   }) => {
     api
       .post(APIConfiguration.POST_UPDATE_CATALOG_PRODUCT, {
-        ...editProductSelected,
         ...data,
+        asin: editProductSelected?.asin,
+        buybox_price: editProductSelected?.buybox_price,
+        amazon_fee: editProductSelected?.amazon_fee,
       })
       .then((res) => {
-        toast.success(res.data.message || 'Product updated successfully');
+        successToast(res.data.message || 'Product updated successfully');
         // Update the specific item in the local state to avoid re-loading the page
         queryClient.setQueryData<CatalogType[]>(['catalogs'], (oldData) => {
           if (!oldData) return [];
@@ -277,7 +281,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
       })
       .catch((err) => {
         console.log('err', err);
-        toast.error('Failed to update product');
+        errorToast('Failed to update product');
       });
   };
 

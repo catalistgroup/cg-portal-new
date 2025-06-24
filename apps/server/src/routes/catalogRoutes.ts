@@ -22,6 +22,11 @@ router.get(
   asyncHandler(catalogController.getAllBrands.bind(catalogController)),
 );
 
+router.get(
+  "/get-qualified-brands",
+  asyncHandler(catalogController.getAllQualifiedBrands.bind(catalogController)),
+);
+
 router.post(
   "/bulk-catalog-update",
   asyncHandler(catalogController.bulkBrandUpdate.bind(catalogController)),

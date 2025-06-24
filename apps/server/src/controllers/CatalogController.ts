@@ -44,6 +44,8 @@ export class CatalogController {
       const buying_price = req.body?.buying_price;
       const buybox_price = req.body?.buybox_price;
       const amazon_fee = req.body?.amazon_fee;
+      const profitable = req.body?.profitable;
+      const force_profitable_manual = req.body?.force_profitable_manual;
 
       if (!asin || typeof asin !== "string") {
         return res.status(400).json({ error: "Invalid or missing asin" });
@@ -69,6 +71,14 @@ export class CatalogController {
         return res.status(400).json({ error: "Invalid buying price" });
       }
 
+      if (force_profitable_manual) {
+        if (typeof profitable !== "boolean") {
+          return res
+            .status(400)
+            .json({ error: "Invalid or missing profitable status" });
+        }
+      }
+
       const newCalculatedData = calcWholesalePrice({
         asin,
         buying_price,
@@ -82,7 +92,9 @@ export class CatalogController {
         data: {
           selling_status,
           buying_price,
-          profitable: newCalculatedData.profitable,
+          profitable: force_profitable_manual
+            ? profitable
+            : newCalculatedData.profitable,
           selling_price: newCalculatedData.selling_price?.toString?.(),
           moq: newCalculatedData.moq || 0,
           buybox_price: newCalculatedData.buybox_price?.toString?.(),
@@ -238,6 +250,36 @@ export class CatalogController {
         },
       });
       res.status(200).json(brands);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to retrieve brands" });
+    }
+  }
+
+  // TODO: fix this query later not optimized
+  async getAllQualifiedBrands(req: Request, res: Response) {
+    try {
+      const brands = await prisma.catalog.findMany({
+        where: {
+          selling_status: true,
+          profitable: true,
+        },
+        distinct: ["brand"],
+        select: {
+          id: true,
+          brand: true,
+        },
+        orderBy: {
+          brand: "asc",
+        },
+      });
+
+      const response = brands.map((b) => ({
+        id: b.id,
+        name: b.brand,
+      }));
+
+      res.status(200).json(response);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Failed to retrieve brands" });

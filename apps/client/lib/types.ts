@@ -56,6 +56,7 @@ export type CatalogType = {
   updated_at: Date;
   store_id: number;
   store?: StoreType;
+  profitable?: boolean;
 
   wfs_id?: string; // nullable
   walmart_buybox?: string; // nullable
