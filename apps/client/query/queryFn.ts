@@ -25,6 +25,11 @@ export const getAllBrands = () =>
     return v.data;
   });
 
+export const getAllQualifiedBrands = () =>
+  api.get(APIConfiguration.GET_ALL_QUALIFIED_BRANDS).then((v) => {
+    return v.data;
+  });
+
 export const overviewByStoreId = (
   storeId: string,
   query?: Record<string, string>
