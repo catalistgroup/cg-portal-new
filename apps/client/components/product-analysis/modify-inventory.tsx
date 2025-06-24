@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Calculator,
@@ -52,9 +52,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { UpdateSellingPriceModal } from '@/components/modal';
+import { UpdateSellingPriceModal, BrandUpdateModel } from '@/components/modal';
 import APIConfiguration from '@/lib/endpoints';
 import { BrandType } from '@/types';
+import BrandDropdown from '../brand-dropdown';
+import { useToast } from '@/components/Toast';
+import LoadingPopup from '../loading-popup';
+import { getApiErrorMsg } from '@/utils/helper-function';
 
 interface OrderFormState {
   paymentMethod: string;
@@ -83,6 +87,8 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const { errorToast, successToast } = useToast();
+
   const { data = [], isLoading } = useQuery<CatalogType[]>({
     queryKey: ['catalogs'],
     queryFn: () => getCatalogs(),
@@ -96,6 +102,10 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editProductSelected, setEditProductSelected] =
     useState<CatalogType | null>(null);
+  const [isBrandUpdateModalOpen, setIsBrandUpdateModalOpen] = useState(false);
+  const [brandSelectedForBulkUpdate, setBrandSelectedForBulkUpdate] =
+    useState<BrandType | null>(null);
+  const [isBrandUpdateLoading, setIsBrandUpdateLoading] = useState(false);
 
   const catalogColumns: ColumnDef<CatalogType>[] = [
     {
@@ -626,6 +636,52 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     };
   };
 
+  const onBandUpdateSavePress = async (data: {
+    selling_status: boolean;
+    // profitable_status: boolean;
+  }) => {
+    setIsBrandUpdateModalOpen(false);
+    setIsBrandUpdateLoading(true);
+    api
+      .post(APIConfiguration.POST_BULK_BRAND_UPDATE, {
+        brand: brandSelectedForBulkUpdate?.name,
+        sellingStatus: data.selling_status,
+        // profitableStatus: data.profitable_status,
+      })
+      .then((res) => {
+        // here insted reloading the page in want to update the state of the catalogs
+        queryClient.setQueryData<CatalogType[]>(['catalogs'], (oldData) => {
+          if (!oldData) return [];
+
+          return oldData.map((item) =>
+            item.brand === brandSelectedForBulkUpdate?.name
+              ? {
+                  ...item,
+                  selling_status: data.selling_status,
+                }
+              : item
+          );
+        });
+        setBrandSelectedForBulkUpdate(null);
+        successToast(res?.data?.message || 'Brand updated successfully');
+      })
+      .catch((err) => {
+        errorToast(getApiErrorMsg(err));
+      })
+      .finally(() => {
+        setIsBrandUpdateLoading(false);
+      });
+  };
+
+  const onBandUpdateClosePress = () => {
+    setIsBrandUpdateModalOpen(false);
+  };
+
+  const onBrandSelectForBulkUpdate = (brand: BrandType | null) => {
+    setBrandSelectedForBulkUpdate(brand);
+    setIsBrandUpdateModalOpen(true);
+  };
+
   const { items: displayItems, total: calculatedTotal } = getOrderedItems(
     data.filter((d) => selected.includes(String(d.id))),
     orderQuantities,
@@ -671,6 +727,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
 
   return (
     <div>
+      <LoadingPopup isOpen={isBrandUpdateLoading} />
       <h2 className="text-xl font-semibold mb-2">
         {!showOrderPanel ? 'Master Catalogue' : 'Create Purchase Order'}
       </h2>
@@ -1195,8 +1252,19 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                 onCleared={() => setFilters(initialFilterState)}
               />
 
+              {/* Bulk Brand Update */}
+              <div className="h-10 mt-6 w-1/3">
+                <BrandDropdown
+                  brands={brands}
+                  label="Bulk Brand Update:"
+                  placeholder="Select a brand to update"
+                  selectedBrand={brandSelectedForBulkUpdate}
+                  onBrandSelect={onBrandSelectForBulkUpdate}
+                />
+              </div>
+
               <div
-                className={`flex flex-col md:flex-row gap-y-5 mt-10 ${rootData.user?.type == 'store' ? '' : 'pt-8'} items-center justify-between`}
+                className={`flex flex-col md:flex-row gap-y-5 mt-4 ${rootData.user?.type == 'store' ? '' : 'pt-4'} items-center justify-between`}
               >
                 <div className="relative flex items-center gap-3">
                   <div className="relative max-w-[500px] w-full">
@@ -1395,10 +1463,16 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
         </AlertDialog>
       )}
       <UpdateSellingPriceModal
-        product={editProductSelected}
         isOpen={isEditModalOpen}
         onSavePress={handleEditSave}
+        product={editProductSelected}
         onClosePress={handleEditClose}
+      />
+      <BrandUpdateModel
+        isOpen={isBrandUpdateModalOpen}
+        brand={brandSelectedForBulkUpdate}
+        onSavePress={onBandUpdateSavePress}
+        onClosePress={onBandUpdateClosePress}
       />
     </div>
   );
