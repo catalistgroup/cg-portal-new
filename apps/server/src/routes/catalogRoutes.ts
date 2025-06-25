@@ -12,24 +12,9 @@ router.get(
 
 router.get("/store/:storeId", catalogController.getCatalogsByStoreId);
 
-router.post(
-  "/update-catalog-product",
-  asyncHandler(catalogController.updateCatalogProduct.bind(catalogController)),
-);
-
-router.get(
-  "/get-brands",
-  asyncHandler(catalogController.getAllBrands.bind(catalogController)),
-);
-
 router.get(
   "/get-qualified-brands",
   asyncHandler(catalogController.getAllQualifiedBrands.bind(catalogController)),
-);
-
-router.post(
-  "/bulk-catalog-update",
-  asyncHandler(catalogController.bulkBrandUpdate.bind(catalogController)),
 );
 
 // router.get("/:id", authenticate, (req, res) =>

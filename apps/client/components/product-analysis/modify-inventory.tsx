@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CatalogType, StoreType } from '@/lib/types';
-import { getAllBrands, getCatalogs } from '@/query/queryFn';
+import { getAllBrands, getAllCatalogs } from '@/query/queryFn';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '../ui/datatable';
 import { SelectableTableWrapper } from '../selectable-table';
@@ -90,8 +90,8 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   const { errorToast, successToast } = useToast();
 
   const { data = [], isLoading } = useQuery<CatalogType[]>({
-    queryKey: ['catalogs'],
-    queryFn: () => getCatalogs(),
+    queryKey: ['admin-catalogs'],
+    queryFn: () => getAllCatalogs(),
   });
 
   const { data: brands = [] } = useQuery<BrandType[]>({
@@ -253,10 +253,10 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     buying_price: string;
     selling_status: boolean;
     force_profitable_manual: boolean;
-    profitable: boolean;
+    profitable: boolean | null;
   }) => {
     api
-      .post(APIConfiguration.POST_UPDATE_CATALOG_PRODUCT, {
+      .post(APIConfiguration.POST_UPDATE_CATALOG_PRODUCT_ADMIN, {
         ...data,
         asin: editProductSelected?.asin,
         buybox_price: editProductSelected?.buybox_price,
@@ -265,17 +265,20 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
       .then((res) => {
         successToast(res.data.message || 'Product updated successfully');
         // Update the specific item in the local state to avoid re-loading the page
-        queryClient.setQueryData<CatalogType[]>(['catalogs'], (oldData) => {
-          if (!oldData) return [];
+        queryClient.setQueryData<CatalogType[]>(
+          ['admin-catalogs'],
+          (oldData) => {
+            if (!oldData) return [];
 
-          return oldData.map((item) =>
-            item.asin === editProductSelected?.asin
-              ? {
-                  ...res.data.data,
-                }
-              : item
-          );
-        });
+            return oldData.map((item) =>
+              item.asin === editProductSelected?.asin
+                ? {
+                    ...res.data.data,
+                  }
+                : item
+            );
+          }
+        );
 
         handleEditClose();
       })
@@ -647,32 +650,35 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     setIsBrandUpdateModalOpen(false);
     setIsBrandUpdateLoading(true);
     api
-      .post(APIConfiguration.POST_BULK_BRAND_UPDATE, {
+      .post(APIConfiguration.POST_BULK_BRAND_UPDATE_ADMIN, {
         brand: brandSelectedForBulkUpdate?.name,
         sellingStatus: data.selling_status,
         // profitableStatus: data.profitable_status,
       })
       .then((res) => {
         // here insted reloading the page in want to update the state of the catalogs
-        queryClient.setQueryData<CatalogType[]>(['catalogs'], (oldData) => {
-          if (!oldData) return [];
+        queryClient.setQueryData<CatalogType[]>(
+          ['admin-catalogs'],
+          (oldData) => {
+            if (!oldData) return [];
 
-          return oldData.map((item) =>
-            item.brand === brandSelectedForBulkUpdate?.name
-              ? {
-                  ...item,
-                  selling_status: data.selling_status,
-                }
-              : item
-          );
-        });
-        setBrandSelectedForBulkUpdate(null);
+            return oldData.map((item) =>
+              item.brand === brandSelectedForBulkUpdate?.name
+                ? {
+                    ...item,
+                    selling_status: data.selling_status,
+                  }
+                : item
+            );
+          }
+        );
         successToast(res?.data?.message || 'Brand updated successfully');
       })
       .catch((err) => {
         errorToast(getApiErrorMsg(err));
       })
       .finally(() => {
+        setBrandSelectedForBulkUpdate(null);
         setIsBrandUpdateLoading(false);
       });
   };
