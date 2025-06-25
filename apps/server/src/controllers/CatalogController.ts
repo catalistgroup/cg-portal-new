@@ -9,38 +9,8 @@ export class CatalogController {
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
       const catalogs = await prisma.$queryRaw`
-        WITH brand_order AS (
-         SELECT 
-          name, 
-           last_item_inserted_at,
-            ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
-         FROM "Brand"
-        )
-        SELECT 
-          c.id,
-          c.asin,
-          c.name,
-          c.brand,
-          c.selling_price,
-          c.sku,
-          c.upc,
-          c.moq,
-          c.buybox_price,
-          c.amazon_fee,
-          c.profit,
-          c.margin,
-          c.roi,
-          c.image_url,
-          c.created_at,
-          -- c.selling_status,
-          -- c.profitable,
-          c.supplier,
-          b.last_item_inserted_at
-        FROM "Catalog" c
-        JOIN brand_order b ON c.brand = b.name
-        WHERE c.selling_status = TRUE AND c.profitable = TRUE
-        ORDER BY b.sort_order, c.created_at DESC
-        `;
+        SELECT * FROM catalog_with_brand_order
+      `;
 
       res.json(catalogs);
     } catch (error) {
