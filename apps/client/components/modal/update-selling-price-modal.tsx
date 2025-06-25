@@ -113,10 +113,7 @@ export default function UpdateSellingPriceModal({
                 checked={isChecked}
                 onCheckedChange={(checked) => setIsChecked(checked as boolean)}
               />
-              <Label htmlFor="checkbox">
-                Make selected profitable status priority over the price
-                calculation
-              </Label>
+              <Label htmlFor="checkbox">Force Profitable</Label>
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
