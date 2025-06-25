@@ -20,11 +20,6 @@ export const getCatalogs = () =>
     return v.data;
   });
 
-export const getAllBrands = () =>
-  api.get(APIConfiguration.GET_ALL_BRANDS).then((v) => {
-    return v.data;
-  });
-
 export const getAllQualifiedBrands = () =>
   api.get(APIConfiguration.GET_ALL_QUALIFIED_BRANDS).then((v) => {
     return v.data;
@@ -69,3 +64,14 @@ export const purchaseOrderBySAndOId = (
       })
     )
     .then((v) => v.data);
+
+// Admin
+export const getAllCatalogs = () =>
+  api.get(APIConfiguration.GET_ALL_CATALOGS_ADMIN).then((v) => {
+    return v.data;
+  });
+
+export const getAllBrands = () =>
+  api.get(APIConfiguration.GET_ALL_BRANDS_ADMIN).then((v) => {
+    return v.data;
+  });
