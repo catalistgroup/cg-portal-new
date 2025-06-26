@@ -18,7 +18,7 @@ async function OrdersPage({ params }: Props) {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Purchase Orders</h2>
+      <h2 className="text-xl font-semibold mb-4 text-catalogue_primary-background">Purchase Orders</h2>
       <PurchaseOrdersList storeId={storeId} user={user} />
     </div>
   );

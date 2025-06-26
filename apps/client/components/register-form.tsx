@@ -111,7 +111,7 @@ export function RegisterForm() {
   return (
     <div className="bg-gradient-to-br from-white to-[#f6f9ff] flex flex-col items-center justify-center px-4">
       <Image
-        src="/logo.png"
+        src="/logo.svg"
         alt="Catalist Group"
         width={140}
         height={40}
@@ -318,9 +318,9 @@ export function RegisterForm() {
                 )}
               />
 
-              <Button 
-                type="submit" 
-                className="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-200" 
+              <Button
+                type="submit"
+                className="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
                 disabled={isLoading}
               >
                 {isLoading ? "Registering..." : "Register"}

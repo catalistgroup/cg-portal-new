@@ -133,7 +133,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
         const amazonLink = `https://www.amazon.com/dp/${asin}`;
 
         return (
-          <div className="min-w-[300px] max-w-[400px] text-primary hover:underline">
+          <div className="min-w-[300px] max-w-[400px] hover:underline text-catalogue_primary-background">
             <a href={amazonLink} target="_blank" rel="noopener noreferrer">
               {productName}
             </a>
@@ -738,7 +738,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   return (
     <div>
       <LoadingPopup isOpen={isBrandUpdateLoading} />
-      <h2 className="text-xl font-semibold mb-2">
+      <h2 className="text-xl font-semibold mb-2 text-catalogue_primary-background">
         {!showOrderPanel ? 'Master Catalogue' : 'Create Purchase Order'}
       </h2>
       {showOrderPanel && (
