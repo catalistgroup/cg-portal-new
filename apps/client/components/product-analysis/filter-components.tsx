@@ -1,55 +1,55 @@
-'use client';
+"use client"
 
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from "react"
 
-import { Filter } from 'lucide-react';
+import { Filter } from "lucide-react"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { BrandDropdown } from '@/components/index';
-import { BrandType } from '@/types';
+} from "../ui/select"
+import { Input } from "../ui/input"
+import { Button } from "../ui/button"
+import { BrandDropdown } from "@/components/index"
+import { BrandType } from "@/types"
 
 export type FilterState = {
-  priceComparator: string;
-  priceValue: string;
-  profitComparator: string;
-  profitValue: string;
-  marginComparator: string;
-  marginValue: string;
-  brand: BrandType | null;
-};
+  priceComparator: string
+  priceValue: string
+  profitComparator: string
+  profitValue: string
+  marginComparator: string
+  marginValue: string
+  brand: BrandType | null
+}
 
 type FilterAction =
-  | { type: 'SET_PRICE_COMPARATOR'; payload: string }
-  | { type: 'SET_PRICE_VALUE'; payload: string }
-  | { type: 'SET_PROFIT_COMPARATOR'; payload: string }
-  | { type: 'SET_PROFIT_VALUE'; payload: string }
-  | { type: 'SET_MARGIN_COMPARATOR'; payload: string }
-  | { type: 'SET_MARGIN_VALUE'; payload: string }
-  | { type: 'SET_BRAND'; payload: BrandType | null }
-  | { type: 'RESET_FILTERS' };
+  | { type: "SET_PRICE_COMPARATOR"; payload: string }
+  | { type: "SET_PRICE_VALUE"; payload: string }
+  | { type: "SET_PROFIT_COMPARATOR"; payload: string }
+  | { type: "SET_PROFIT_VALUE"; payload: string }
+  | { type: "SET_MARGIN_COMPARATOR"; payload: string }
+  | { type: "SET_MARGIN_VALUE"; payload: string }
+  | { type: "SET_BRAND"; payload: BrandType | null }
+  | { type: "RESET_FILTERS" }
 
 export const initialFilterState: FilterState = {
-  priceComparator: '>=',
-  priceValue: '',
-  profitComparator: '>',
-  profitValue: '',
-  marginComparator: '>',
-  marginValue: '',
+  priceComparator: ">=",
+  priceValue: "",
+  profitComparator: ">",
+  profitValue: "",
+  marginComparator: ">",
+  marginValue: "",
   brand: null,
-};
+}
 
 type Props = {
-  onFiltered?: (filters: FilterState) => void;
-  onCleared?: () => void;
-  brands: BrandType[];
-};
+  onFiltered?: (filters: FilterState) => void
+  onCleared?: () => void
+  brands: BrandType[]
+}
 
 export default function FilterComponent({
   onFiltered,
@@ -59,44 +59,49 @@ export default function FilterComponent({
   const [state, dispatch] = useReducer(
     (state: FilterState, action: FilterAction) => {
       switch (action.type) {
-        case 'SET_PRICE_COMPARATOR':
-          return { ...state, priceComparator: action.payload };
-        case 'SET_PRICE_VALUE':
-          return { ...state, priceValue: action.payload };
-        case 'SET_PROFIT_COMPARATOR':
-          return { ...state, profitComparator: action.payload };
-        case 'SET_PROFIT_VALUE':
-          return { ...state, profitValue: action.payload };
-        case 'SET_MARGIN_COMPARATOR':
-          return { ...state, marginComparator: action.payload };
-        case 'SET_MARGIN_VALUE':
-          return { ...state, marginValue: action.payload };
-        case 'SET_BRAND':
-          return { ...state, brand: action.payload };
-        case 'RESET_FILTERS':
-          return { ...initialFilterState };
+        case "SET_PRICE_COMPARATOR":
+          return { ...state, priceComparator: action.payload }
+        case "SET_PRICE_VALUE":
+          return { ...state, priceValue: action.payload }
+        case "SET_PROFIT_COMPARATOR":
+          return { ...state, profitComparator: action.payload }
+        case "SET_PROFIT_VALUE":
+          return { ...state, profitValue: action.payload }
+        case "SET_MARGIN_COMPARATOR":
+          return { ...state, marginComparator: action.payload }
+        case "SET_MARGIN_VALUE":
+          return { ...state, marginValue: action.payload }
+        case "SET_BRAND":
+          return { ...state, brand: action.payload }
+        case "RESET_FILTERS":
+          return { ...initialFilterState }
         default:
-          return state;
+          return state
       }
     },
     initialFilterState
-  );
+  )
 
   const isAnalyzeDisabled =
     !state.priceValue.trim() &&
     !state.profitValue.trim() &&
     !state.marginValue.trim() &&
-    !state.brand?.id;
+    !state.brand?.id
 
   const handleAnalyze = () => {
-    if (isAnalyzeDisabled) return;
-    onFiltered?.(state);
-  };
+    if (!isAnalyzeDisabled) {
+      onFiltered?.(state)
+    }
+  }
+
+  useEffect(() => {
+    handleAnalyze()
+  }, [state.brand])
 
   const handleClear = () => {
-    dispatch({ type: 'RESET_FILTERS' });
-    onCleared?.();
-  };
+    dispatch({ type: "RESET_FILTERS" })
+    onCleared?.()
+  }
 
   return (
     <div className="pt-6 flex gap-y-6 flex-col lg:flex-row">
@@ -108,7 +113,7 @@ export default function FilterComponent({
             <Select
               value={state.priceComparator}
               onValueChange={(v) =>
-                dispatch({ type: 'SET_PRICE_COMPARATOR', payload: v })
+                dispatch({ type: "SET_PRICE_COMPARATOR", payload: v })
               }
             >
               <SelectTrigger className="w-20 rounded-l-full border-r-0 border-black/10">
@@ -127,7 +132,7 @@ export default function FilterComponent({
               placeholder="Enter price"
               value={state.priceValue}
               onChange={(e) =>
-                dispatch({ type: 'SET_PRICE_VALUE', payload: e.target.value })
+                dispatch({ type: "SET_PRICE_VALUE", payload: e.target.value })
               }
               className="rounded-r-full border-black/10"
             />
@@ -141,7 +146,7 @@ export default function FilterComponent({
             <Select
               value={state.profitComparator}
               onValueChange={(v) =>
-                dispatch({ type: 'SET_PROFIT_COMPARATOR', payload: v })
+                dispatch({ type: "SET_PROFIT_COMPARATOR", payload: v })
               }
             >
               <SelectTrigger className="w-20 rounded-l-full border-r-0 border-black/10">
@@ -162,7 +167,7 @@ export default function FilterComponent({
                 value={state.profitValue}
                 onChange={(e) =>
                   dispatch({
-                    type: 'SET_PROFIT_VALUE',
+                    type: "SET_PROFIT_VALUE",
                     payload: e.target.value,
                   })
                 }
@@ -182,7 +187,7 @@ export default function FilterComponent({
             <Select
               value={state.marginComparator}
               onValueChange={(v) =>
-                dispatch({ type: 'SET_MARGIN_COMPARATOR', payload: v })
+                dispatch({ type: "SET_MARGIN_COMPARATOR", payload: v })
               }
             >
               <SelectTrigger className="w-20 rounded-l-full border-r-0 border-black/10">
@@ -203,7 +208,7 @@ export default function FilterComponent({
                 value={state.marginValue}
                 onChange={(e) =>
                   dispatch({
-                    type: 'SET_MARGIN_VALUE',
+                    type: "SET_MARGIN_VALUE",
                     payload: e.target.value,
                   })
                 }
@@ -219,7 +224,10 @@ export default function FilterComponent({
         <BrandDropdown
           brands={brands}
           selectedBrand={state.brand}
-          onBrandSelect={(v) => dispatch({ type: 'SET_BRAND', payload: v })}
+          onBrandSelect={(v) => {
+            dispatch({ type: "SET_BRAND", payload: v })
+            handleAnalyze()
+          }}
         />
       </div>
 
@@ -255,5 +263,5 @@ export default function FilterComponent({
         </div>
       </div>
     </div>
-  );
+  )
 }
