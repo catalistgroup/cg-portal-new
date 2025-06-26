@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import prisma from "../configs/database";
 import { calcWholesalePrice } from "../utils/catalog-helper-function";
+import { bulkCatalogItemSchema } from "../validators/catalogValidator";
+import { REQUIRED_KEYS_BULK_CATALOG_IMPORT } from "../constants";
+import fs from "fs";
 
 export class AdminController {
   async getAllCatalogs(req: Request, res: Response) {
@@ -180,6 +183,168 @@ export class AdminController {
       console.error("Error in bulkBrandUpdate:", error);
       res.status(500).json({
         error: "Failed to update catalogs",
+      });
+    }
+  }
+
+  async importBulkCatalogs(req: Request, res: Response) {
+    const filePath = req.file?.path;
+    const failedItems: any[] = [];
+    const successItems: string[] = [];
+
+    if (!filePath) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    try {
+      const content = fs.readFileSync(filePath, "utf8");
+      const jsonData = JSON.parse(content);
+
+      const extractZodErrors = (error: any): string[] => {
+        const errors = [];
+        if (error.issues) {
+          for (const issue of error.issues) {
+            errors.push(`${issue.path.join(".")}: ${issue.message}`);
+          }
+        }
+        if (error.unionErrors) {
+          const field = error.path?.join(".") || "field";
+          errors.push(`${field}: Invalid value - expected number or null`);
+        }
+        return errors.length > 0 ? errors : ["Validation failed"];
+      };
+
+      for (const [index, item] of jsonData.entries()) {
+        const itemErrors: string[] = [];
+
+        // Check required keys before Zod validation
+        for (const key of REQUIRED_KEYS_BULK_CATALOG_IMPORT) {
+          if (
+            item[key] === undefined ||
+            item[key] === null ||
+            item[key] === ""
+          ) {
+            itemErrors.push(`${key}: Required`);
+          }
+        }
+
+        if (itemErrors.length > 0) {
+          failedItems.push({
+            asin: item.asin || `Catalog ${index + 1}`,
+            error: itemErrors,
+          });
+          continue;
+        }
+
+        const validation = bulkCatalogItemSchema.safeParse(item);
+
+        if (!validation.success) {
+          const cleanErrors = extractZodErrors(validation.error);
+          failedItems.push({
+            asin: item.asin || `Catalog ${index + 1}`,
+            error: cleanErrors,
+          });
+          continue;
+        }
+
+        const data = validation.data;
+
+        try {
+          const calcResult = calcWholesalePrice(data);
+
+          const processedData = {
+            asin: data.asin,
+            profitable: calcResult.profitable,
+            brand: data.brand,
+            name: data.name,
+            sku: data.sku || null,
+            upc: data.upc || null,
+            moq: calcResult.moq ?? data.moq,
+            buying_price: calcResult.buying_price.toString(),
+            selling_price: calcResult.selling_price.toString(),
+            buybox_price: calcResult.buybox_price?.toString() || null,
+            amazon_fee: data.amazon_fee.toString(),
+            profit: calcResult.profit.toString(),
+            margin: calcResult.margin.toString(),
+            roi: parseFloat(calcResult.roi),
+            updated_at: new Date().toISOString(),
+            selling_status: true,
+            image_url: data.image_url,
+          };
+
+          const existingRecord = await prisma.catalog.findUnique({
+            where: { asin: processedData.asin },
+          });
+
+          if (existingRecord) {
+            await prisma.catalog.update({
+              where: { asin: processedData.asin },
+              data: processedData,
+            });
+          } else {
+            await prisma.catalog.create({
+              data: {
+                ...processedData,
+              },
+            });
+          }
+
+          successItems.push(data.asin);
+        } catch (dbErr) {
+          let dbErrorMessage = "Database error occurred";
+          if (dbErr instanceof Error) {
+            if (dbErr.message.includes("Unique constraint failed")) {
+              dbErrorMessage = "Record with this identifier already exists";
+            } else if (dbErr.message.includes("Foreign key constraint")) {
+              dbErrorMessage = "Referenced record does not exist";
+            } else {
+              dbErrorMessage = dbErr.message;
+            }
+          }
+
+          failedItems.push({
+            asin: item.asin || `Catalog ${index + 1}`,
+            error: [dbErrorMessage],
+          });
+        }
+      }
+
+      try {
+        fs.unlinkSync(filePath);
+      } catch (deleteErr) {
+        console.error("Failed to delete uploaded file:", deleteErr);
+      }
+
+      const response = {
+        message: failedItems.length === 0 ? "success" : "failed",
+        items_succeeded: successItems.length,
+        items_failed: failedItems.length,
+        items: failedItems,
+      };
+
+      if (failedItems.length === 0) {
+        res.status(200).json(response);
+      } else if (successItems.length === 0) {
+        res.status(400).json(response);
+      } else {
+        res.status(207).json(response);
+      }
+    } catch (err) {
+      if (filePath) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (deleteErr) {
+          console.error(
+            "Failed to delete uploaded file after error:",
+            deleteErr,
+          );
+        }
+      }
+
+      console.error("File processing error:", err);
+      res.status(500).json({
+        error: "Failed to process the JSON file",
+        details: err instanceof Error ? err.message : "Unknown error",
       });
     }
   }
