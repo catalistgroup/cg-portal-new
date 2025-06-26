@@ -96,7 +96,7 @@ export default function FilterComponent({
 
   useEffect(() => {
     handleAnalyze()
-  }, [state])
+  }, [state.brand])
 
   const handleClear = () => {
     dispatch({ type: "RESET_FILTERS" })
@@ -225,7 +225,8 @@ export default function FilterComponent({
           brands={brands}
           selectedBrand={state.brand}
           onBrandSelect={(v) => {
-            dispatch({ type: "SET_BRAND", payload: v }), handleAnalyze()
+            dispatch({ type: "SET_BRAND", payload: v })
+            handleAnalyze()
           }}
         />
       </div>
