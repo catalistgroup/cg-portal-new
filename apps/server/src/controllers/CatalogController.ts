@@ -9,8 +9,8 @@ export class CatalogController {
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
       const catalogs = await prisma.$queryRaw`
-        SELECT * FROM catalog_with_brand_order
-      `;
+        SELECT * FROM catalog_customer_view
+       `;
 
       res.json(catalogs);
     } catch (error) {
