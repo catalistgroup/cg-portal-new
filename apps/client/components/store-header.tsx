@@ -135,7 +135,7 @@ export function StoreHeader({ storeId, stores, user }: Props) {
         {user?.is_superuser && (
           <Button
             variant="outline"
-            className={`${baseClass} ${isModifyInventory ? 'bg-black text-white' : 'text-gray-600'}`}
+            className={`${baseClass} ${isModifyInventory ? 'bg-catalogue_primary-background text-white' : 'text-gray-600'}`}
             onClick={() =>
               (window.location.href = `/store/${storeId}/admin-inventory`)
             }
@@ -146,7 +146,7 @@ export function StoreHeader({ storeId, stores, user }: Props) {
         )}
         <Button
           variant="outline"
-          className={`${baseClass} ${isAnalysis ? 'bg-black text-white' : 'text-gray-600'}`}
+          className={`${baseClass} ${isAnalysis ? 'bg-catalogue_primary-background text-white' : 'text-gray-600'}`}
           onClick={() => (window.location.href = `/store/${storeId}/analysis`)}
         >
           <BarChart3 className="h-4 w-4 mr-2" />
@@ -154,7 +154,7 @@ export function StoreHeader({ storeId, stores, user }: Props) {
         </Button>
         <Button
           variant="outline"
-          className={`${baseClass} ${isOrders ? 'bg-black text-white' : 'text-gray-600'}`}
+          className={`${baseClass} ${isOrders ? 'bg-catalogue_primary-background text-white' : 'text-gray-600'}`}
           onClick={() => router.push(`/store/${storeId}/orders`)}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
