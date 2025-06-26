@@ -65,7 +65,7 @@ export default function ForgotPasswordForm() {
   return (
     <div className="bg-gradient-to-br from-white to-[#f6f9ff] min-h-screen flex flex-col items-center justify-center px-4">
       <Image
-        src="/logo.png"
+        src="/logo.svg"
         alt="Catalist Group"
         width={140}
         height={40}
@@ -82,7 +82,7 @@ export default function ForgotPasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          
+
           {error && (
             <Alert variant="destructive" className="flex justify-between items-center">
               <AlertCircle />

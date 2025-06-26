@@ -86,7 +86,7 @@ export function ResetPasswordForm() {
 
   return (
     <div className="bg-gradient-to-br from-white to-[#f6f9ff] flex flex-col items-center justify-center min-h-screen px-4">
-      <img src="/logo.png" alt="Catalist Group" width={140} height={40} className="object-contain h-[86px] w-fit mb-8" />
+      <img src="/logo.svg" alt="Catalist Group" width={140} height={40} className="object-contain h-[86px] w-fit mb-8" />
       <Card className="w-full max-w-md rounded-2xl shadow-md">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">Reset Password</CardTitle>
@@ -162,9 +162,9 @@ export function ResetPasswordForm() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-200" 
+              <Button
+                type="submit"
+                className="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
                 disabled={isLoading}
               >
                 {isLoading ? "Resetting..." : "Reset Password"}

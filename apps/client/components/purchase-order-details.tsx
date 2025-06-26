@@ -52,7 +52,7 @@ export function PurchaseOrderDetails({ storeId, orderId }: Props) {
           <div className="flex flex-col sm:flex-row justify-between items-center px-6 pt-6 pb-2 gap-4 border-b">
             <div className="flex items-center gap-3">
               <Image
-                src="/logo.png"
+                src="/logo.svg"
                 alt="Catalist Group"
                 width={300}
                 height={48}

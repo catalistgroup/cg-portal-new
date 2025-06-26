@@ -86,7 +86,7 @@ export function StoreHeader({ storeId, stores, user }: Props) {
       <div className="flex justify-between items-center py-2 px-6 md:px-8 lg:px-12">
         <div className="flex items-center gap-2">
           <Image
-            src="/header_logo.png"
+            src="/header_logo.svg"
             alt="Catalist Group"
             width={200}
             height={50}
