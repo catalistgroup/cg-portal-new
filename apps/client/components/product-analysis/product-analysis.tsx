@@ -116,12 +116,12 @@ export function ProductAnalysis({ storeId, stores }: Props) {
         const amazonLink = `https://www.amazon.com/dp/${asin}`;
 
         return (
-          <div className="min-w-[300px] max-w-[400px] text-primary hover:underline">
+          <div className="min-w-[300px] max-w-[400px] hover:underline text-catalogue_primary-background">
             <a href={amazonLink} target="_blank" rel="noopener noreferrer">
               {productName}
             </a>
           </div>
-        );
+        )
       },
     },
     {
