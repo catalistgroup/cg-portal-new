@@ -153,7 +153,7 @@ export default function OtpVerificationForm() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white to-[#f6f9ff] px-4">
-      <Image src="/logo.png" alt="Catalist Group" width={140} height={40} className="mb-8 h-[86px]" priority />
+      <Image src="/logo.svg" alt="Catalist Group" width={140} height={40} className="mb-8 h-[86px]" priority />
       <div className="w-full max-w-md bg-white shadow-md rounded-2xl p-6 space-y-6 text-center">
         <h1 className="text-2xl font-bold">OTP Verification</h1>
         <p className="text-muted-foreground text-sm">

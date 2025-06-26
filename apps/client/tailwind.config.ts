@@ -53,6 +53,10 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        catalogue_primary: {
+          background: "rgba(1, 22, 56, 1)",
+          subTitle: "rgba(0, 0, 0, 1)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

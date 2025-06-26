@@ -61,7 +61,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted text-catalogue_primary-background",
       className
     )}
     {...props}
@@ -76,7 +76,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 font-bold text-left whitespace-nowrap align-middle text-black/90 bg-[#EBEDF0] font-[Inter]", // Ensure header has a background
+      "h-12 px-4 font-bold text-left whitespace-nowrap align-middle text-white bg-catalogue_primary-background font-[Inter]", // Ensure header has a background
       className
     )}
     {...props}

@@ -84,7 +84,7 @@ export function StoreCreateForm() {
   return (
     <div className="bg-gradient-to-br from-white to-[#f6f9ff] flex flex-col items-center justify-center px-4">
       <Image
-        src="/logo.png"
+        src="/logo.svg"
         alt="Catalist Group"
         width={140}
         height={40}
