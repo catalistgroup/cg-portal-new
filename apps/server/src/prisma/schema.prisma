@@ -36,7 +36,6 @@ model Store {
   created_at  DateTime        @default(now())
   updated_at  DateTime        @updatedAt
   deleted_at  DateTime?
-  catalogs    Catalog[]
   orders      PurchaseOrder[]
   user        User            @relation(fields: [user_id], references: [id])
 }
@@ -67,9 +66,7 @@ model Catalog {
   walmart_roi    String?
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
-  store_id       Int
   profitable     Boolean  @default(false)
-  store          Store    @relation(fields: [store_id], references: [id])
 }
 
 model PurchaseOrder {
