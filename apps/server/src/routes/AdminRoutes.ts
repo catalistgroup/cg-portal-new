@@ -34,4 +34,9 @@ router.post(
   asyncHandler(adminController.importBulkCatalogs.bind(adminController)),
 );
 
+router.post(
+  "/brand-merge",
+  asyncHandler(adminController.brandMerge.bind(adminController)),
+);
+
 export default router;
