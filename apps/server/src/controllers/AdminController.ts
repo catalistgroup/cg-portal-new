@@ -329,4 +329,121 @@ export class AdminController {
       });
     }
   }
+
+  async brandMerge(req: Request, res: Response) {
+    try {
+      const { brands, active_brand } = req.body;
+
+      if (!brands || !Array.isArray(brands) || brands.length < 2) {
+        return res.status(400).json({
+          error: "At least 2 brands are required for merging",
+        });
+      }
+
+      if (!active_brand || !active_brand.id || !active_brand.name) {
+        return res.status(400).json({
+          error: "Active brand with id and name is required",
+        });
+      }
+
+      const activeBrandInArray = brands.find(
+        (brand) => brand.id === active_brand.id,
+      );
+      if (!activeBrandInArray) {
+        return res.status(400).json({
+          error: "Active brand must be one of the brands in the merge list",
+        });
+      }
+
+      const brandNames = brands.map((brand) => brand.name);
+      const brandIds = brands.map((brand) => brand.id);
+      const activeBrandName = active_brand.name;
+      const activeBrandId = active_brand.id;
+
+      const existingBrands = await prisma.brand.findMany({
+        where: {
+          id: { in: brandIds },
+        },
+        select: { id: true, name: true },
+      });
+
+      if (existingBrands.length !== brands.length) {
+        const existingIds = existingBrands.map((b) => b.id);
+        const missingIds = brandIds.filter((id) => !existingIds.includes(id));
+        return res.status(400).json({
+          error: `Brands with IDs ${missingIds.join(", ")} not found in database`,
+        });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        const catalogUpdateResult = await tx.catalog.updateMany({
+          where: {
+            brand: { in: brandNames },
+          },
+          data: {
+            brand: activeBrandName,
+            updated_at: new Date(),
+          },
+        });
+
+        const brandDeleteResult = await tx.brand.deleteMany({
+          where: {
+            id: { in: brandIds.filter((id) => id !== activeBrandId) },
+          },
+        });
+
+        await tx.brand.update({
+          where: { id: activeBrandId },
+          data: {
+            last_item_inserted_at: new Date(),
+            updated_at: new Date(),
+          },
+        });
+
+        return {
+          catalogsUpdated: catalogUpdateResult.count,
+          brandsDeleted: brandDeleteResult.count,
+          activeBrandId,
+          activeBrandName,
+        };
+      });
+
+      res.status(200).json({
+        message: "Brands merged successfully",
+        data: {
+          catalogsUpdated: result.catalogsUpdated,
+          brandsDeleted: result.brandsDeleted,
+          activeBrand: {
+            id: result.activeBrandId,
+            name: result.activeBrandName,
+          },
+          mergedBrands: brands.filter((brand) => brand.id !== activeBrandId),
+        },
+      });
+    } catch (error) {
+      console.error("Error during brand merge:", error);
+
+      if (error instanceof Error) {
+        if (error.message.includes("Foreign key constraint")) {
+          return res.status(400).json({
+            error: "Cannot merge brands that are referenced by other records",
+            details:
+              "Some brands may be in use by purchase orders or other entities",
+          });
+        }
+
+        if (error.message.includes("Unique constraint")) {
+          return res.status(400).json({
+            error: "Brand name conflict detected",
+            details: "The target brand name may already exist",
+          });
+        }
+      }
+
+      res.status(500).json({
+        error: "Failed to merge brands",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
 }
