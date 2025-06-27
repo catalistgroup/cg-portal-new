@@ -3,7 +3,6 @@ import prisma from "../configs/database";
 import { calcWholesalePrice } from "../utils/catalog-helper-function";
 import { bulkCatalogItemSchema } from "../validators/catalogValidator";
 import { REQUIRED_KEYS_BULK_CATALOG_IMPORT } from "../constants";
-import fs from "fs";
 
 export class AdminController {
   async getAllCatalogs(req: Request, res: Response) {
@@ -188,18 +187,13 @@ export class AdminController {
   }
 
   async importBulkCatalogs(req: Request, res: Response) {
-    const filePath = req.file?.path;
+    const jsonData = req.body;
     const failedItems: any[] = [];
     const successItems: string[] = [];
-
-    if (!filePath) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
+    let insertCount = 0;
+    let updateCount = 0;
 
     try {
-      const content = fs.readFileSync(filePath, "utf8");
-      const jsonData = JSON.parse(content);
-
       const extractZodErrors = (error: any): string[] => {
         const errors = [];
         if (error.issues) {
@@ -214,10 +208,13 @@ export class AdminController {
         return errors.length > 0 ? errors : ["Validation failed"];
       };
 
+      if (!Array.isArray(jsonData) || jsonData.length === 0) {
+        return res.status(400).json({ error: "No catalog items provided" });
+      }
+
       for (const [index, item] of jsonData.entries()) {
         const itemErrors: string[] = [];
 
-        // Check required keys before Zod validation
         for (const key of REQUIRED_KEYS_BULK_CATALOG_IMPORT) {
           if (
             item[key] === undefined ||
@@ -237,7 +234,6 @@ export class AdminController {
         }
 
         const validation = bulkCatalogItemSchema.safeParse(item);
-
         if (!validation.success) {
           const cleanErrors = extractZodErrors(validation.error);
           failedItems.push({
@@ -281,12 +277,12 @@ export class AdminController {
               where: { asin: processedData.asin },
               data: processedData,
             });
+            updateCount++;
           } else {
             await prisma.catalog.create({
-              data: {
-                ...processedData,
-              },
+              data: processedData,
             });
+            insertCount++;
           }
 
           successItems.push(data.asin);
@@ -309,17 +305,13 @@ export class AdminController {
         }
       }
 
-      try {
-        fs.unlinkSync(filePath);
-      } catch (deleteErr) {
-        console.error("Failed to delete uploaded file:", deleteErr);
-      }
-
       const response = {
-        message: failedItems.length === 0 ? "success" : "failed",
+        message: failedItems.length === 0 ? "success" : "partial_failure",
         items_succeeded: successItems.length,
         items_failed: failedItems.length,
-        items: failedItems,
+        new_items_inserted: insertCount,
+        existing_items_updated: updateCount,
+        failed_items: failedItems,
       };
 
       if (failedItems.length === 0) {
@@ -330,17 +322,6 @@ export class AdminController {
         res.status(207).json(response);
       }
     } catch (err) {
-      if (filePath) {
-        try {
-          fs.unlinkSync(filePath);
-        } catch (deleteErr) {
-          console.error(
-            "Failed to delete uploaded file after error:",
-            deleteErr,
-          );
-        }
-      }
-
       console.error("File processing error:", err);
       res.status(500).json({
         error: "Failed to process the JSON file",
