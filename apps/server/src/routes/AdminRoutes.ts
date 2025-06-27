@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { AdminController } from "../controllers/AdminController";
 import { asyncHandler } from "../utils/asyncHandler";
-import multer from "multer";
+import express from "express";
 
 const router = Router();
 const adminController = new AdminController();
@@ -26,11 +26,9 @@ router.post(
   asyncHandler(adminController.bulkBrandUpdate.bind(adminController)),
 );
 
-// Configure multer for file uploads
-const upload = multer({ dest: "uploads/" });
 router.post(
   "/import-bulk-catalogs",
-  upload.single("file"),
+  express.json(),
   asyncHandler(adminController.importBulkCatalogs.bind(adminController)),
 );
 
