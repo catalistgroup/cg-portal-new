@@ -45,7 +45,7 @@ export function StoreHeader({ storeId, stores, user }: Props) {
   }, [storeId, stores])
 
   const isDashboard = pathname === `/store/${storeId}`
-  const isEditBrands = pathname === `/brands`
+  const isEditBrands = pathname === `/store/${storeId}/brands`
   const isAnalysis = pathname === `/store/${storeId}/analysis`
   const isModifyInventory = pathname === `/store/${storeId}/admin-inventory`
   const isOrders = pathname === `/store/${storeId}/orders`
@@ -145,7 +145,7 @@ export function StoreHeader({ storeId, stores, user }: Props) {
             <Button
               variant="outline"
               className={`${baseClass} ${isEditBrands ? "bg-catalogue_primary-background text-white" : "text-gray-600"}`}
-              onClick={() => (window.location.href = `/brands`)}
+              onClick={() => (window.location.href = `/store/${storeId}/brands`)}
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               Edit Brands
