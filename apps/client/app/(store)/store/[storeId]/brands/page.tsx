@@ -216,8 +216,8 @@ export default function BrandEditPage({ storeId, user }: Props) {
             <button
             //   disabled={selectedBrands.length < 2}
               onClick={handleMerge}
-              className={`text-white px-5 py-2 rounded-md shadow-sm transition
-                ${selectedBrands.length < 2 ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 cursor-pointer"}`}
+            //   className={`text-white px-5 py-2 rounded-md shadow-sm transition
+            //     ${selectedBrands.length < 2 ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 cursor-pointer"}`}
             >
               Merge
             </button>
