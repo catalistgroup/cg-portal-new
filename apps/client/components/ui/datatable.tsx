@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -36,6 +36,8 @@ export function DataTable<TData extends object>({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [paginatedData, setPaginatedData] = useState<TData[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null)
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -55,16 +57,26 @@ export function DataTable<TData extends object>({
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "auto" })
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    setTimeout(scrollToTop, 0)
+  }
+
   const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1);
-  };
+    setPageSize(size)
+    setCurrentPage(1)
+    setTimeout(scrollToTop, 0)
+  }
+
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-hidden rounded-lg ">
-        <Table>
+        <Table ref={scrollRef}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
