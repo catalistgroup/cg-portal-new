@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getAllBrands } from "@/query/queryFn"
 import { BrandType } from "@/types"
 import { useEffect, useMemo, useState } from "react"
@@ -12,6 +12,8 @@ import { useToast } from "@/components/Toast"
 import Swal from "sweetalert2"
 import withReactContent from "sweetalert2-react-content"
 import LoadingPopup from "@/components/loading-popup"
+import api from "@/lib/api"
+import APIConfiguration from "@/lib/endpoints"
 
 const MySwal = withReactContent(Swal)
 
@@ -27,16 +29,31 @@ type Props = {
   }
 }
 
+type BrandItem = {
+  id: number
+  name: string
+}
+
+type MergeBrandPayload = {
+  brands: BrandItem[]
+  active_brand: BrandItem
+}
+
 export default function BrandEditPage({ storeId, user }: Props) {
+  // fetches all brands from db
   const { data = [], isLoading } = useQuery<BrandType[]>({
     queryKey: ["brands"],
     queryFn: () => getAllBrands(),
   })
 
+  const { errorToast, successToast } = useToast() // custom toast
   const [searchQuery, setSearchQuery] = useState("")
   const [brands, setBrands] = useState<BrandType[]>(data)
-  const debouncedQuery = useDebounce(searchQuery, 300)
-  const { errorToast, successToast } = useToast()
+  const [isMerging, setIsMerging] = useState(false)
+  const [selectedBrands, setSelectedBrands] = useState<number[]>([])
+  const debouncedQuery = useDebounce(searchQuery, 300) // updates value after a delay
+  const queryClient = useQueryClient()
+  const allBrands: BrandType[] = [...brands]
 
   const filteredBrands = useMemo(() => {
     return data.filter((brand) =>
@@ -47,9 +64,6 @@ export default function BrandEditPage({ storeId, user }: Props) {
   useEffect(() => {
     setBrands(data)
   }, [data])
-
-  const allBrands: BrandType[] = [...brands]
-  const [selectedBrands, setSelectedBrands] = useState<number[]>([])
 
   const handleCheckboxChange = (brandId: number, isChecked: boolean) => {
     if (isChecked) {
@@ -103,9 +117,9 @@ export default function BrandEditPage({ storeId, user }: Props) {
         }
         return selectedRadio.value
       },
-    }).then((result) => {
-      if (result.isConfirmed && result.value) {
-        const mainBrandId = parseInt(result.value)
+    }).then((res) => {
+      if (res.isConfirmed && res.value) {
+        const mainBrandId = parseInt(res.value)
         const mainBrand = allBrands.find((b) => b.id === mainBrandId)
 
         // SECOND MODAL
@@ -116,32 +130,63 @@ export default function BrandEditPage({ storeId, user }: Props) {
           confirmButtonText: "Yes",
           cancelButtonText: "Cancel",
         }).then((confirmResult) => {
-          if (confirmResult.isConfirmed) {
-            const mergedBrandIds = selected.map((b) => b.id)
-            const newBrands = brands.filter(
-              (b) => !mergedBrandIds.includes(b.id) || b.id === mainBrandId
+          if (confirmResult.isConfirmed && mainBrand) {
+            const payload = {
+              brands: selected,
+              active_brand: mainBrand,
+            }
+
+            mergeBrand(
+              payload,
+              setIsMerging,
+              setSelectedBrands,
+              successToast,
+              errorToast,
+              queryClient
             )
-
-            setBrands(newBrands)
-            setSelectedBrands([])
-
-            MySwal.fire({
-              icon: "success",
-              title: "Merged",
-            })
-
-            // Send callback to API here with
-            // - mainBrandId
-            // - mergedBrandIds
           }
         })
       }
     })
   }
 
+  const mergeBrand = (
+    payload: MergeBrandPayload,
+    setIsMerging: (val: boolean) => void,
+    setSelectedBrands: (val: number[]) => void,
+    successToast: (msg: string) => void,
+    errorToast: (msg: string) => void,
+    queryClient: any
+  ) => {
+    setIsMerging(true)
+
+    api
+      .post(APIConfiguration.POST_BRAND_MERGE_ADMIN, payload)
+      .then((res) => {
+        successToast(res.data.message || "Brands merged successfully")
+
+        // Refresh updated data from the server
+        queryClient.invalidateQueries({ queryKey: ["brands"] })
+
+        setSelectedBrands([])
+
+        MySwal.fire({
+          icon: "success",
+          title: "Brands merged !",
+        })
+      })
+      .catch((err) => {
+        console.error("Merge error:", err)
+        errorToast("Failed to merge brands")
+      })
+      .finally(() => {
+        setIsMerging(false)
+      })
+  }
+
   return (
     <>
-      <LoadingPopup isOpen={isLoading} />
+      <LoadingPopup isOpen={isLoading || isMerging} />
       {/* Brand name list */}
       <div className="w-screen">
         {/* buttons */}
