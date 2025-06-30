@@ -6,6 +6,7 @@ const APIConfiguration = {
   POST_UPDATE_CATALOG_PRODUCT_ADMIN: 'admin/update-catalog-product',
   GET_ALL_BRANDS_ADMIN: 'admin/get-all-brands',
   POST_BULK_BRAND_UPDATE_ADMIN: 'admin/bulk-catalog-update-by-brand',
-};
+  POST_BRAND_MERGE_ADMIN: 'admin/brand-merge',
+}
 
 export default APIConfiguration;
