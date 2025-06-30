@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { AdminController } from "../controllers/AdminController";
 import { asyncHandler } from "../utils/asyncHandler";
+import express from "express";
 
 const router = Router();
 const adminController = new AdminController();
@@ -23,6 +24,17 @@ router.get(
 router.post(
   "/bulk-catalog-update-by-brand",
   asyncHandler(adminController.bulkBrandUpdate.bind(adminController)),
+);
+
+router.post(
+  "/import-bulk-catalogs",
+  express.json(),
+  asyncHandler(adminController.importBulkCatalogs.bind(adminController)),
+);
+
+router.post(
+  "/brand-merge",
+  asyncHandler(adminController.brandMerge.bind(adminController)),
 );
 
 export default router;
