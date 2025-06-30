@@ -1,7 +1,8 @@
 import axios from "axios";
 import { getCookie } from "cookies-next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "https://portal.api.catalistgroup.co"
 
 const api = axios.create({
   baseURL: BASE_URL + "/api",
