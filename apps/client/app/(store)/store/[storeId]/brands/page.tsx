@@ -56,10 +56,15 @@ export default function BrandEditPage({ storeId, user }: Props) {
   const allBrands: BrandType[] = [...brands]
 
   const filteredBrands = useMemo(() => {
-    return data.filter((brand) =>
+    const filtered = data.filter((brand) =>
       brand.name?.toLowerCase().includes(debouncedQuery.toLowerCase())
     )
-  }, [data, debouncedQuery])
+
+    const selected = filtered.filter((b) => selectedBrands.includes(b.id))
+    const unselected = filtered.filter((b) => !selectedBrands.includes(b.id))
+
+    return [...selected, ...unselected]
+  }, [data, debouncedQuery, selectedBrands])
 
   useEffect(() => {
     setBrands(data)
