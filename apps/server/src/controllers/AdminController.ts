@@ -19,14 +19,14 @@ export class AdminController {
     try {
       const catalogs = await prisma.$queryRaw`
         WITH brand_order AS (
-         SELECT 
-          name, 
+         SELECT
+          name,
            last_item_inserted_at,
             ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
          FROM "Brand"
         )
-        SELECT 
-          c.*, 
+        SELECT
+          c.*,
           b.last_item_inserted_at
         FROM "Catalog" c
         JOIN brand_order b ON c.brand = b.name
@@ -124,7 +124,7 @@ export class AdminController {
       const brands = await prisma.brand.findMany({
         select: { id: true, name: true },
         orderBy: {
-          name: "asc",
+          name: "desc",
         },
       });
       res.status(200).json(brands);
