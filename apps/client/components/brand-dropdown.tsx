@@ -53,8 +53,16 @@ export default function BrandDropdown({
         </SelectTrigger>
         <SelectContent>
           {brands.map((brand) => (
-            <SelectItem key={brand.id} value={brand.id.toString()}>
-              {brand.name}
+            <SelectItem
+              key={brand.id}
+              value={brand.id.toString()}
+            >
+              <div className="flex justify-between w-full">
+                <span>{brand.name}</span>
+                <span className="text-muted-foreground">
+                  ({brand.profitable_and_selling})
+                </span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>

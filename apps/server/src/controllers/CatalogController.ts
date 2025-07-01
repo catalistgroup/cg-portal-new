@@ -162,12 +162,28 @@ export class CatalogController {
         },
       });
 
-      const response = brands.map((b) => ({
-        id: b.id,
-        name: b.brand,
-      }));
+      const brandNames = brands.map((b) => b.brand);
 
-      res.status(200).json(response);
+      const matchedBrands = await prisma.brand.findMany({
+        where: {
+          name: { in: brandNames },
+        },
+        select: {
+          id: true,
+          name: true,
+          profitable_and_selling: true,
+        },
+        orderBy: {
+          name: "asc",
+        },
+      });
+
+      //   const response = brands.map((b) => ({
+      //     id: b.id,
+      //     name: b.brand,
+      //   }));
+
+      res.status(200).json(matchedBrands);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Failed to retrieve brands" });
