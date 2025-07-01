@@ -124,7 +124,7 @@ export class AdminController {
       const brands = await prisma.brand.findMany({
         select: { id: true, name: true },
         orderBy: {
-          name: "desc",
+          name: "asc",
         },
       });
       res.status(200).json(brands);
