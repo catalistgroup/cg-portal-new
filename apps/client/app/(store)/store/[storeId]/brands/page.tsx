@@ -56,15 +56,10 @@ export default function BrandEditPage({ storeId, user }: Props) {
   const allBrands: BrandType[] = [...brands]
 
   const filteredBrands = useMemo(() => {
-    const filtered = data.filter((brand) =>
+    return data.filter((brand) =>
       brand.name?.toLowerCase().includes(debouncedQuery.toLowerCase())
     )
-
-    const selected = filtered.filter((b) => selectedBrands.includes(b.id))
-    const unselected = filtered.filter((b) => !selectedBrands.includes(b.id))
-
-    return [...selected, ...unselected]
-  }, [data, debouncedQuery, selectedBrands])
+  }, [data, debouncedQuery])
 
   useEffect(() => {
     setBrands(data)
@@ -237,6 +232,51 @@ export default function BrandEditPage({ storeId, user }: Props) {
           </div>
         </div>
 
+        {/* Selected Items Preview */}
+        {selectedBrands.length > 0 && (
+          <div className="max-w-screen-2xl mx-auto px-4 mb-4">
+            <h2 className="text-lg font-semibold text-gray-700 mb-2">
+              Selected Brands
+            </h2>
+            <table className="w-full table-fixed divide-y divide-gray-200 border border-green-400 rounded-lg">
+              <thead className="bg-green-50">
+                <tr>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 w-1/4">
+                    Selected
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-3/4">
+                    Brand Name
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-green-100 bg-white">
+                {[...selectedBrands]
+                  .reverse()
+                  .map((id) => allBrands.find((b) => b.id === id))
+                  .filter((b) => b !== undefined)
+                  .map((brand) => (
+                    <tr
+                      key={brand!.id}
+                      className="hover:bg-green-50 transition"
+                    >
+                      <td className="px-6 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked
+                          onChange={() =>
+                            handleCheckboxChange(brand!.id, false)
+                          }
+                          className="w-5 h-5 text-green-600 focus:ring-green-500 rounded"
+                        />
+                      </td>
+                      <td className="px-6 py-4 text-gray-800">{brand!.name}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* Table */}
         <div className="max-w-screen-2xl mx-auto px-4">
           <table className="w-full table-fixed divide-y divide-gray-200 border border-gray-300 rounded-lg">
@@ -252,18 +292,18 @@ export default function BrandEditPage({ storeId, user }: Props) {
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {filteredBrands.map((brand) => (
-                <tr key={brand.id} className="hover:bg-gray-50 transition">
+                <tr key={brand!.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 text-center">
                     <input
                       type="checkbox"
-                      checked={selectedBrands.includes(brand.id)}
+                      checked={selectedBrands.includes(brand!.id)}
                       onChange={(e) =>
-                        handleCheckboxChange(brand.id, e.target.checked)
+                        handleCheckboxChange(brand!.id, e.target.checked)
                       }
                       className="w-5 h-5 text-green-600 focus:ring-green-500 rounded"
                     />
                   </td>
-                  <td className="px-6 py-4 text-gray-800">{brand.name}</td>
+                  <td className="px-6 py-4 text-gray-800">{brand!.name}</td>
                 </tr>
               ))}
             </tbody>
