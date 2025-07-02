@@ -145,45 +145,65 @@ export class CatalogController {
   }
 
   // TODO: fix this query later not optimized
+  //   async getAllQualifiedBrands(req: Request, res: Response) {
+  //     try {
+  //       const brands = await prisma.catalog.findMany({
+  //         where: {
+  //           selling_status: true,
+  //           profitable: true,
+  //         },
+  //         distinct: ["brand"],
+  //         select: {
+  //           id: true,
+  //           brand: true,
+  //         },
+  //         orderBy: {
+  //           brand: "asc",
+  //         },
+  //       });
+
+  //       const brandNames = brands.map((b) => b.brand);
+
+  //       const matchedBrands = await prisma.brand.findMany({
+  //         where: {
+  //           name: { in: brandNames },
+  //         },
+  //         select: {
+  //           id: true,
+  //           name: true,
+  //           profitable_and_selling: true,
+  //         },
+  //         orderBy: {
+  //           name: "asc",
+  //         },
+  //       });
+
+  //       //   const response = brands.map((b) => ({
+  //       //     id: b.id,
+  //       //     name: b.brand,
+  //       //   }));
+
+  //       res.status(200).json(matchedBrands);
+  //     } catch (error) {
+  //       console.error(error);
+  //       res.status(500).json({ message: "Failed to retrieve brands" });
+  //     }
+  //   }
+
   async getAllQualifiedBrands(req: Request, res: Response) {
     try {
-      const brands = await prisma.catalog.findMany({
+      const brands = await prisma.brand.findMany({
+        select: { id: true, name: true, profitable_and_selling: true },
         where: {
-          selling_status: true,
-          profitable: true,
-        },
-        distinct: ["brand"],
-        select: {
-          id: true,
-          brand: true,
-        },
-        orderBy: {
-          brand: "asc",
-        },
-      });
-
-      const brandNames = brands.map((b) => b.brand);
-
-      const matchedBrands = await prisma.brand.findMany({
-        where: {
-          name: { in: brandNames },
-        },
-        select: {
-          id: true,
-          name: true,
-          profitable_and_selling: true,
+          profitable_and_selling: {
+            gt: 0,
+          },
         },
         orderBy: {
           name: "asc",
         },
       });
-
-      //   const response = brands.map((b) => ({
-      //     id: b.id,
-      //     name: b.brand,
-      //   }));
-
-      res.status(200).json(matchedBrands);
+      res.status(200).json(brands);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Failed to retrieve brands" });
