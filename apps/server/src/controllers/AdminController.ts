@@ -122,7 +122,12 @@ export class AdminController {
   async getAllBrands(req: Request, res: Response) {
     try {
       const brands = await prisma.brand.findMany({
-        select: { id: true, name: true },
+        select: { id: true, name: true, all_catalog_count: true },
+        where: {
+          all_catalog_count: {
+            gt: 0,
+          },
+        },
         orderBy: {
           name: "asc",
         },
