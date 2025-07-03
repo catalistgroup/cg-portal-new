@@ -11,6 +11,8 @@ export class AdminController {
     // @ts-ignore
     const isAdmin = req.user?.isAdmin;
 
+    console.log('CI_CD test 1')
+
     if (!isAdmin) {
       return res.status(403).json({ error: "Action Unauthorized" });
     }
