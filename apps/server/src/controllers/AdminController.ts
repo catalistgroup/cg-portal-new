@@ -20,20 +20,20 @@ export class AdminController {
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
       const catalogs = await prisma.$queryRaw`
-        WITH brand_order AS (
-         SELECT
-          name,
+       WITH brand_order AS (
+         SELECT 
+           id AS brand_id,
            last_item_inserted_at,
-            ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
+           ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
          FROM "Brand"
-        )
-        SELECT
-          c.*,
-          b.last_item_inserted_at
-        FROM "Catalog" c
-        JOIN brand_order b ON c.brand = b.name
-        ORDER BY b.sort_order, c.created_at DESC
-        `;
+       )
+       SELECT 
+         c.*, 
+         b.last_item_inserted_at
+       FROM "Catalog" c
+       JOIN brand_order b ON c.brand_id = b.brand_id
+       ORDER BY b.sort_order, c.created_at DESC
+     `;
 
       res.json(catalogs);
     } catch (error) {
@@ -129,6 +129,7 @@ export class AdminController {
           all_catalog_count: {
             gt: 0,
           },
+          merged_to: null, // brands which aren't merged
         },
         orderBy: {
           name: "asc",
@@ -371,7 +372,12 @@ export class AdminController {
         where: {
           id: { in: brandIds },
         },
-        select: { id: true, name: true },
+        select: {
+          id: true,
+          name: true,
+          all_catalog_count: true,
+          profitable_and_selling: true,
+        },
       });
 
       if (existingBrands.length !== brands.length) {
@@ -381,6 +387,17 @@ export class AdminController {
           error: `Brands with IDs ${missingIds.join(", ")} not found in database`,
         });
       }
+
+      const totalAllCatalog = existingBrands.reduce(
+        (sum, b) => sum + (b.all_catalog_count || 0),
+        0,
+      );
+      const totalProfitableAndSelling = existingBrands.reduce(
+        (sum, b) => sum + (b.profitable_and_selling || 0),
+        0,
+      );
+
+      const mergedBrandIds = brandIds.filter((id) => id !== activeBrandId);
 
       const result = await prisma.$transaction(async (tx) => {
         const catalogUpdateResult = await tx.catalog.updateMany({
@@ -393,15 +410,21 @@ export class AdminController {
           },
         });
 
-        const brandDeleteResult = await tx.brand.deleteMany({
+        const brandUpdateResult = await tx.brand.updateMany({
           where: {
-            id: { in: brandIds.filter((id) => id !== activeBrandId) },
+            id: { in: mergedBrandIds },
+          },
+          data: {
+            merged_to: activeBrandId,
+            updated_at: new Date(),
           },
         });
 
         await tx.brand.update({
           where: { id: activeBrandId },
           data: {
+            all_catalog_count: totalAllCatalog,
+            profitable_and_selling: totalProfitableAndSelling,
             last_item_inserted_at: new Date(),
             updated_at: new Date(),
           },
@@ -409,9 +432,11 @@ export class AdminController {
 
         return {
           catalogsUpdated: catalogUpdateResult.count,
-          brandsDeleted: brandDeleteResult.count,
+          brandsMarkedMerged: brandUpdateResult.count,
           activeBrandId,
           activeBrandName,
+          totalAllCatalog,
+          totalProfitableAndSelling,
         };
       });
 
@@ -419,10 +444,12 @@ export class AdminController {
         message: "Brands merged successfully",
         data: {
           catalogsUpdated: result.catalogsUpdated,
-          brandsDeleted: result.brandsDeleted,
+          brandsMarkedMerged: result.brandsMarkedMerged,
           activeBrand: {
             id: result.activeBrandId,
             name: result.activeBrandName,
+            all_catalog_count: result.totalAllCatalog,
+            profitable_and_selling: result.totalProfitableAndSelling,
           },
           mergedBrands: brands.filter((brand) => brand.id !== activeBrandId),
         },

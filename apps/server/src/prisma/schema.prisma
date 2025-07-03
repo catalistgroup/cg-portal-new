@@ -67,6 +67,8 @@ model Catalog {
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
   profitable     Boolean  @default(false)
+  brand_id       Int?
+  brands         Brand? @relation(fields: [brand_id], references: [id])
 }
 
 model PurchaseOrder {
@@ -118,7 +120,9 @@ model Brand {
   name                      String
   profitable_and_selling    Int      @default(0)
   all_catalog_count         Int      @default(0)
+  merged_to                 Int?     
   last_item_inserted_at     DateTime @default(now()) @db.Timestamp(6)
   created_at                DateTime @default(now()) @db.Timestamp(6)
   updated_at                DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  catalogs                  Catalog[]
 }

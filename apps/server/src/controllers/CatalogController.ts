@@ -9,8 +9,37 @@ export class CatalogController {
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
       const catalogs = await prisma.$queryRaw`
-        SELECT * FROM catalog_customer_view
-       `;
+      WITH brand_order AS (
+        SELECT 
+          id AS brand_id,
+          name AS brand_name,
+          last_item_inserted_at,
+          ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
+        FROM "Brand"
+      )
+      SELECT 
+        c.id,
+        c.asin,
+        c.name,
+        b.brand_name AS brand,
+        c.selling_price,
+        c.sku,
+        c.upc,
+        c.moq,
+        c.buybox_price,
+        c.amazon_fee,
+        c.profit,
+        c.margin,
+        c.roi,
+        c.image_url,
+        c.created_at,
+        c.supplier,
+        b.last_item_inserted_at
+      FROM "Catalog" c
+      JOIN brand_order b ON c.brand_id = b.brand_id
+      WHERE c.profitable = true AND c.selling_status = true
+      ORDER BY b.sort_order, c.created_at DESC
+    `;
 
       res.json(catalogs);
     } catch (error) {
@@ -39,7 +68,6 @@ export class CatalogController {
       }
 
       const catalogs = await prisma.catalog.findMany({
-        where: { store_id: storeId },
         orderBy: {
           created_at: "desc",
         },
@@ -62,12 +90,6 @@ export class CatalogController {
       const catalog = await prisma.catalog.findFirst({
         where: {
           id,
-          store: {
-            user_id: userId,
-          },
-        },
-        include: {
-          store: true,
         },
       });
 
@@ -133,7 +155,6 @@ export class CatalogController {
           margin,
           roi: roi ? Number(roi) : null,
           image_url,
-          store_id: Number(store_id),
         },
       });
       res.status(201).json(catalog);
@@ -144,52 +165,6 @@ export class CatalogController {
     }
   }
 
-  // TODO: fix this query later not optimized
-  //   async getAllQualifiedBrands(req: Request, res: Response) {
-  //     try {
-  //       const brands = await prisma.catalog.findMany({
-  //         where: {
-  //           selling_status: true,
-  //           profitable: true,
-  //         },
-  //         distinct: ["brand"],
-  //         select: {
-  //           id: true,
-  //           brand: true,
-  //         },
-  //         orderBy: {
-  //           brand: "asc",
-  //         },
-  //       });
-
-  //       const brandNames = brands.map((b) => b.brand);
-
-  //       const matchedBrands = await prisma.brand.findMany({
-  //         where: {
-  //           name: { in: brandNames },
-  //         },
-  //         select: {
-  //           id: true,
-  //           name: true,
-  //           profitable_and_selling: true,
-  //         },
-  //         orderBy: {
-  //           name: "asc",
-  //         },
-  //       });
-
-  //       //   const response = brands.map((b) => ({
-  //       //     id: b.id,
-  //       //     name: b.brand,
-  //       //   }));
-
-  //       res.status(200).json(matchedBrands);
-  //     } catch (error) {
-  //       console.error(error);
-  //       res.status(500).json({ message: "Failed to retrieve brands" });
-  //     }
-  //   }
-
   async getAllQualifiedBrands(req: Request, res: Response) {
     try {
       const brands = await prisma.brand.findMany({
@@ -198,6 +173,7 @@ export class CatalogController {
           profitable_and_selling: {
             gt: 0,
           },
+          merged_to: null,
         },
         orderBy: {
           name: "asc",
