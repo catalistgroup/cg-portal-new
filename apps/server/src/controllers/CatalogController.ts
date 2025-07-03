@@ -173,6 +173,7 @@ export class CatalogController {
           profitable_and_selling: {
             gt: 0,
           },
+          merged_to: null,
         },
         orderBy: {
           name: "asc",
