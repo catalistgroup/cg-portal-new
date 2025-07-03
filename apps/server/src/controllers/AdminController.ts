@@ -18,20 +18,20 @@ export class AdminController {
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
       const catalogs = await prisma.$queryRaw`
-        WITH brand_order AS (
-         SELECT
-          name,
+       WITH brand_order AS (
+         SELECT 
+           id AS brand_id,
            last_item_inserted_at,
-            ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
+           ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
          FROM "Brand"
-        )
-        SELECT
-          c.*,
-          b.last_item_inserted_at
-        FROM "Catalog" c
-        JOIN brand_order b ON c.brand = b.name
-        ORDER BY b.sort_order, c.created_at DESC
-        `;
+       )
+       SELECT 
+         c.*, 
+         b.last_item_inserted_at
+       FROM "Catalog" c
+       JOIN brand_order b ON c.brand_id = b.brand_id
+       ORDER BY b.sort_order, c.created_at DESC
+     `;
 
       res.json(catalogs);
     } catch (error) {
