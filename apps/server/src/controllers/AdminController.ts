@@ -15,7 +15,7 @@ export class AdminController {
     // @ts-ignore
     const isAdmin = req.user?.isAdmin;
 
-    console.log('CI_CD test 1')
+    console.log("CI_CD test 1");
 
     if (!isAdmin) {
       return res.status(403).json({ error: "Action Unauthorized" });
@@ -58,6 +58,9 @@ export class AdminController {
       const moqInput = req.body?.moq;
       const force_profitable_manual = req.body?.force_profitable_manual;
       const force_selling_price_manual = req.body?.force_selling_price_manual;
+
+      console.log(moqInput);
+      console.log(force_selling_price_manual);
 
       if (!asin || typeof asin !== "string") {
         return res.status(400).json({ error: "Invalid or missing asin" });
@@ -114,23 +117,17 @@ export class AdminController {
       let finalSellingPrice: string | undefined;
       let calculatedBuyboxPrice: string | undefined;
 
-      if (
-        existingCatalog.forced_selling_price &&
-        existingCatalog.selling_price
-      ) {
+      if (force_selling_price_manual && selling_price) {
         calculatedData = calcSellingPrice({
           asin,
-          selling_price: existingCatalog.selling_price,
+          selling_price,
           buybox_price,
           amazon_fee,
         });
 
-        moq = force_selling_price_manual
-          ? Number(moqInput) || 100
-          : existingCatalog.moq || 100;
+        finalSellingPrice = selling_price;
+        moq = Number(moqInput) || 100;
 
-        finalProfitable = existingCatalog.profitable;
-        finalSellingPrice = existingCatalog.selling_price;
         calculatedBuyboxPrice =
           calculatedData?.buybox_price?.toString?.() ||
           buybox_price?.toString?.();
