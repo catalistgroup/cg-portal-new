@@ -1,14 +1,15 @@
 import cron from "node-cron";
 import { PrismaClient } from "@prisma/client";
-import { calcWholesalePrice } from "../utils/catalog-helper-function";
+import {
+  calcWholesalePrice,
+  calcSellingPrice,
+} from "../utils/catalog-helper-function";
 
 const prisma = new PrismaClient();
 
 // Configuration
-const CRON_SCHEDULE = "0 */6 * * *"; // Run every 6 hours
-// const CRON_SCHEDULE = "*/5 * * * *"; // Run every 5 minutes
-// const BATCH_SIZE = 100; // Process records in batches
-const BATCH_SIZE = 2; // Process records in batches
+const CRON_SCHEDULE = "0 4 * * *"; // Run daily at 4:00 am UTC
+const BATCH_SIZE = 100; // Process records in batches
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 5000; // 5 seconds
 
@@ -27,6 +28,11 @@ interface Brand {
   id: number;
   name: string;
   merged_to: number | null;
+}
+
+interface BrandResolution {
+  id: number | null;
+  name: string | null;
 }
 
 interface CatalogImport {
@@ -196,7 +202,13 @@ class CatalogImportProcessor {
       try {
         const existingCatalog = await prisma.catalog.findUnique({
           where: { asin: importRecord.asin },
-          select: { id: true, brand_id: true, asin: true },
+          select: {
+            id: true,
+            brand_id: true,
+            asin: true,
+            forced_selling_price: true,
+            selling_price: true,
+          },
         });
 
         if (existingCatalog) {
@@ -235,21 +247,69 @@ class CatalogImportProcessor {
     asin: string,
     importRecord: CatalogImport,
   ): Promise<void> {
-    // TODO : forces salling price
+    // First, get the existing catalog to check forced_selling_price
+    const existingCatalog = await prisma.catalog.findUnique({
+      where: { asin: asin },
+      select: {
+        id: true,
+        brand_id: true,
+        asin: true,
+        forced_selling_price: true,
+        selling_price: true,
+        moq: true,
+        profitable: true,
+      },
+    });
+
+    if (!existingCatalog) {
+      throw new Error(`Catalog with ASIN ${asin} not found`);
+    }
+
+    let calculatedResult;
+    let moq = importRecord.moq;
+    let profitable = false;
+
+    if (existingCatalog.forced_selling_price && existingCatalog.selling_price) {
+      // Use calcSellingPrice when forced_selling_price is true
+      calculatedResult = calcSellingPrice({
+        asin: importRecord.asin,
+        selling_price: existingCatalog.selling_price,
+        buybox_price: importRecord.buybox_price,
+        amazon_fee: importRecord.amazon_fee,
+      });
+
+      // For forced selling price, we don't recalculate MOQ or profitable status
+      moq = existingCatalog.moq;
+      profitable = existingCatalog.profitable;
+    } else {
+      // Use calcWholesalePrice for normal calculation
+      calculatedResult = calcWholesalePrice({
+        asin: importRecord.asin,
+        buying_price: importRecord.buying_price,
+        buybox_price: importRecord.buybox_price,
+        amazon_fee: importRecord.amazon_fee,
+      });
+
+      moq = calculatedResult.moq || importRecord.moq;
+      profitable = calculatedResult.profitable;
+    }
+
     await prisma.catalog.update({
       where: { asin: asin },
       data: {
         name: importRecord.name,
         buying_price: importRecord.buying_price,
-        selling_price: importRecord.selling_price,
+        selling_price: existingCatalog.forced_selling_price
+          ? existingCatalog.selling_price
+          : calculatedResult.selling_price?.toString?.(),
         sku: importRecord.sku,
         upc: importRecord.upc,
-        moq: importRecord.moq,
-        buybox_price: importRecord.buybox_price,
+        moq: moq,
+        buybox_price: calculatedResult.buybox_price?.toString?.(),
         amazon_fee: importRecord.amazon_fee,
-        profit: importRecord.profit,
-        margin: importRecord.margin,
-        roi: importRecord.roi,
+        profit: calculatedResult.profit?.toString?.(),
+        margin: calculatedResult.margin?.toString?.(),
+        roi: !!calculatedResult.roi ? parseFloat(calculatedResult.roi) : null,
         selling_status: importRecord.selling_status,
         supplier: importRecord.supplier,
         image_url: importRecord.image_url,
@@ -259,7 +319,7 @@ class CatalogImportProcessor {
         walmart_profit: importRecord.walmart_profit,
         walmart_margin: importRecord.walmart_margin,
         walmart_roi: importRecord.walmart_roi,
-        profitable: importRecord.profitable,
+        profitable: profitable,
         updated_at: new Date(),
         // brand: importRecord.brand, // Don't update brand
         // Don't update brand_id
@@ -268,8 +328,8 @@ class CatalogImportProcessor {
   }
 
   async createNewCatalog(importRecord: CatalogImport): Promise<void> {
-    // Resolve brand_id based on brand name and merged_to logic
-    const brandId = await this.resolveBrandId(importRecord.brand);
+    // Resolve brand_id and brand name based on brand name and merged_to logic
+    const brandResolution = await this.resolveBrandId(importRecord.brand);
 
     const calculatedResult = calcWholesalePrice({
       asin: importRecord.asin,
@@ -278,13 +338,11 @@ class CatalogImportProcessor {
       amazon_fee: importRecord.amazon_fee,
     });
 
-    // TODO : brand id
-
     await prisma.catalog.create({
       data: {
         asin: importRecord.asin,
         name: importRecord.name,
-        brand: importRecord.brand,
+        brand: brandResolution.name || importRecord.brand, // if brand not find use brand name from importRecord
         buying_price: importRecord.buying_price,
         selling_price: calculatedResult.selling_price?.toString?.(),
         sku: importRecord.sku,
@@ -305,7 +363,7 @@ class CatalogImportProcessor {
         walmart_margin: importRecord.walmart_margin,
         walmart_roi: importRecord.walmart_roi,
         profitable: calculatedResult?.profitable || false,
-        brand_id: brandId,
+        brand_id: brandResolution.id,
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -318,8 +376,8 @@ class CatalogImportProcessor {
     });
   }
 
-  async resolveBrandId(brandName: string): Promise<number | null> {
-    if (!brandName) return null;
+  async resolveBrandId(brandName: string): Promise<BrandResolution> {
+    if (!brandName) return { id: null, name: null };
 
     const brand = this.brandCache.get(brandName);
 
@@ -338,11 +396,32 @@ class CatalogImportProcessor {
 
       // Add to cache
       this.brandCache.set(brandName, newBrand);
-      return newBrand.id;
+      return { id: newBrand.id, name: newBrand.name };
     }
 
-    // If brand has merged_to, use that brand_id, otherwise use current brand_id
-    return brand.merged_to || brand.id;
+    // If brand has merged_to, find the target brand name
+    if (brand.merged_to) {
+      // Find the target brand in cache
+      const targetBrand = Array.from(this.brandCache.values()).find(
+        (b) => b.id === brand.merged_to,
+      );
+      if (targetBrand) {
+        return { id: brand.merged_to, name: targetBrand.name };
+      }
+
+      // If not in cache, fetch from database
+      const targetBrandFromDb = await prisma.brand.findUnique({
+        where: { id: brand.merged_to },
+        select: { id: true, name: true },
+      });
+
+      if (targetBrandFromDb) {
+        return { id: targetBrandFromDb.id, name: targetBrandFromDb.name };
+      }
+    }
+
+    // Return current brand
+    return { id: brand.id, name: brand.name };
   }
 
   async logStats(): Promise<void> {

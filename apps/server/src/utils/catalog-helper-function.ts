@@ -81,9 +81,11 @@ export type CalcSellingPriceResult = {
   profit: string;
   margin: string;
   roi: string;
+  selling_price: number;
+  buybox_price: number;
 };
 
-//  asin, selling_price, amazon_fee, buying_price @param json
+//  asin, selling_price, amazon_fee, buybox_price @param json
 export function calcSellingPrice(json: any): CalcSellingPriceResult {
   let selling_price = parseFloat(json.selling_price);
   let buyBox = parseFloat(json.buybox_price);
@@ -98,9 +100,11 @@ export function calcSellingPrice(json: any): CalcSellingPriceResult {
   const customer_roi = (customer_profit / selling_price) * 100;
 
   return {
+    selling_price: selling_price,
     asin: json.asin,
     profit: customer_profit.toFixed(2),
     margin: (clientMargin * 100).toFixed(2),
     roi: customer_roi.toFixed(2),
+    buybox_price: buyBox,
   };
 }

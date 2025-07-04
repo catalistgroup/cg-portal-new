@@ -50,7 +50,7 @@ model Catalog {
   sku            String?
   upc            String?
   moq            Int      @default(100)
-  forced_selling            Boolean      @default(false)
+  forced_selling_price            Boolean      @default(false)
   buybox_price   String?
   amazon_fee     String?
   profit         String?
