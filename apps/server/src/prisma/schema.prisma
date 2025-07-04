@@ -127,3 +127,32 @@ model Brand {
   updated_at                DateTime @default(now()) @updatedAt @db.Timestamp(6)
   catalogs                  Catalog[]
 }
+
+model CatalogImport {
+  id             Int      @id @default(autoincrement())
+  asin           String   @unique
+  name           String
+  brand          String
+  buying_price   String
+  selling_price  String
+  sku            String?
+  upc            String?
+  moq            Int      @default(100)
+  buybox_price   String?
+  amazon_fee     String?
+  profit         String?
+  margin         String?
+  roi            Float?
+  selling_status Boolean  @default(false)
+  supplier       String?
+  image_url      String?
+  wfs_id         String?
+  walmart_buybox String?
+  walmart_fees   String?
+  walmart_profit String?
+  walmart_margin String?
+  walmart_roi    String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  profitable     Boolean  @default(false)
+}
