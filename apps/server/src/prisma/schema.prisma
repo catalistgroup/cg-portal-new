@@ -50,6 +50,7 @@ model Catalog {
   sku            String?
   upc            String?
   moq            Int      @default(100)
+  forced_selling            Boolean      @default(false)
   buybox_price   String?
   amazon_fee     String?
   profit         String?
@@ -120,9 +121,38 @@ model Brand {
   name                      String
   profitable_and_selling    Int      @default(0)
   all_catalog_count         Int      @default(0)
-  merged_to                 Int?     
+  merged_to                 Int?
   last_item_inserted_at     DateTime @default(now()) @db.Timestamp(6)
   created_at                DateTime @default(now()) @db.Timestamp(6)
   updated_at                DateTime @default(now()) @updatedAt @db.Timestamp(6)
   catalogs                  Catalog[]
+}
+
+model CatalogImport {
+  id             Int      @id @default(autoincrement())
+  asin           String   @unique
+  name           String
+  brand          String
+  buying_price   String
+  selling_price  String
+  sku            String?
+  upc            String?
+  moq            Int      @default(100)
+  buybox_price   String?
+  amazon_fee     String?
+  profit         String?
+  margin         String?
+  roi            Float?
+  selling_status Boolean  @default(false)
+  supplier       String?
+  image_url      String?
+  wfs_id         String?
+  walmart_buybox String?
+  walmart_fees   String?
+  walmart_profit String?
+  walmart_margin String?
+  walmart_roi    String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  profitable     Boolean  @default(false)
 }
