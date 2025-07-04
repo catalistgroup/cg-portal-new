@@ -42,8 +42,8 @@ export default function UpdateSellingPriceModal({
 }) {
   const [isSelling, setIsSelling] = useState(true);
   const [isProfitable, setIsProfitable] = useState<boolean | null>(null);
-  const [price, setPrice] = useState('');
-  const [isChecked, setIsChecked] = useState(false);
+  //   const [price, setPrice] = useState('');
+  //   const [isChecked, setIsChecked] = useState(false);
   const [forceProfitable, setForceProfitable] = useState(false);
   const [forceSellingPrice, setForceSellingPrice] = useState(false);
   const [buyingPrice, setBuyingPrice] = useState('');

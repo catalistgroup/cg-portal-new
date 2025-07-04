@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import prisma from "../configs/database";
-import { calcWholesalePrice } from "../utils/catalog-helper-function";
+import {
+  calcSellingPrice,
+  calcWholesalePrice,
+} from "../utils/catalog-helper-function";
 import { bulkCatalogItemSchema } from "../validators/catalogValidator";
 import { REQUIRED_KEYS_BULK_CATALOG_IMPORT } from "../constants";
 import catalogImportProcessor from "../cron/catalogImport_to_catalog_sync";
@@ -22,14 +25,14 @@ export class AdminController {
     try {
       const catalogs = await prisma.$queryRaw`
        WITH brand_order AS (
-         SELECT 
+         SELECT
            id AS brand_id,
            last_item_inserted_at,
            ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
          FROM "Brand"
        )
-       SELECT 
-         c.*, 
+       SELECT
+         c.*,
          b.last_item_inserted_at
        FROM "Catalog" c
        JOIN brand_order b ON c.brand_id = b.brand_id
@@ -48,10 +51,13 @@ export class AdminController {
       const asin = req.body?.asin;
       const selling_status = req.body?.selling_status;
       const buying_price = req.body?.buying_price;
+      const selling_price = req.body?.selling_price;
       const buybox_price = req.body?.buybox_price;
       const amazon_fee = req.body?.amazon_fee;
-      const profitable = req.body?.profitable;
+      const profitableInput = req.body?.profitable;
+      const moqInput = req.body?.moq;
       const force_profitable_manual = req.body?.force_profitable_manual;
+      const force_selling_price_manual = req.body?.force_selling_price_manual;
 
       if (!asin || typeof asin !== "string") {
         return res.status(400).json({ error: "Invalid or missing asin" });
@@ -77,38 +83,88 @@ export class AdminController {
         return res.status(400).json({ error: "Invalid buying price" });
       }
 
-      if (force_profitable_manual) {
-        if (typeof profitable !== "boolean") {
+      if (force_profitable_manual && typeof profitableInput !== "boolean") {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing profitable status" });
+      }
+
+      if (force_selling_price_manual) {
+        if (selling_price === undefined || isNaN(Number(selling_price))) {
           return res
             .status(400)
-            .json({ error: "Invalid or missing profitable status" });
+            .json({ error: "Invalid or missing selling price" });
+        }
+        if (moqInput === undefined || isNaN(Number(moqInput))) {
+          return res.status(400).json({ error: "Invalid or missing MOQ" });
         }
       }
 
-      const newCalculatedData = calcWholesalePrice({
-        asin,
-        buying_price,
-        buybox_price,
-        amazon_fee,
+      const existingCatalog = await prisma.catalog.findUnique({
+        where: { asin },
       });
 
-      // Update the catalog product in the database
+      if (!existingCatalog) {
+        return res.status(404).json({ error: "Catalog item not found" });
+      }
+
+      let calculatedData;
+      let moq;
+      let finalProfitable;
+      let finalSellingPrice: string | undefined;
+      let calculatedBuyboxPrice: string | undefined;
+
+      if (
+        existingCatalog.forced_selling_price &&
+        existingCatalog.selling_price
+      ) {
+        calculatedData = calcSellingPrice({
+          asin,
+          selling_price: existingCatalog.selling_price,
+          buybox_price,
+          amazon_fee,
+        });
+
+        moq = force_selling_price_manual
+          ? Number(moqInput) || 100
+          : existingCatalog.moq || 100;
+
+        finalProfitable = existingCatalog.profitable;
+        finalSellingPrice = existingCatalog.selling_price;
+        calculatedBuyboxPrice =
+          calculatedData?.buybox_price?.toString?.() ||
+          buybox_price?.toString?.();
+      } else {
+        const wholesaleData = calcWholesalePrice({
+          asin,
+          buying_price,
+          buybox_price,
+          amazon_fee,
+        });
+
+        calculatedData = wholesaleData;
+        finalSellingPrice = wholesaleData.selling_price?.toString();
+        moq = wholesaleData.moq || 100;
+
+        finalProfitable = wholesaleData.profitable;
+        calculatedBuyboxPrice = wholesaleData.buybox_price?.toString?.();
+      }
+
       const updatedCatalog = await prisma.catalog.update({
         where: { asin },
         data: {
           selling_status,
           buying_price,
           profitable: force_profitable_manual
-            ? profitable
-            : newCalculatedData.profitable,
-          selling_price: newCalculatedData.selling_price?.toString?.(),
-          moq: newCalculatedData.moq || 100,
-          buybox_price: newCalculatedData.buybox_price?.toString?.(),
-          profit: newCalculatedData.profit?.toString?.(),
-          margin: newCalculatedData.margin?.toString?.(),
-          roi: !!newCalculatedData.roi
-            ? parseFloat(newCalculatedData.roi)
-            : null,
+            ? profitableInput
+            : finalProfitable,
+          selling_price: finalSellingPrice,
+          forced_selling_price: !!force_selling_price_manual,
+          moq,
+          buybox_price: calculatedBuyboxPrice,
+          profit: calculatedData.profit,
+          margin: calculatedData.margin,
+          roi: parseFloat(calculatedData.roi),
         },
       });
 
