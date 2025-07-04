@@ -62,6 +62,7 @@ interface OrderFormState {
   phone: string;
   company: string;
   storefront: string;
+  marketplace: string;
   street: string;
   city: string;
   state: string;
@@ -306,7 +307,8 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     email: user?.email || '',
     phone: user?.phone || '',
     company: storeName || '',
-    storefront: user?.orders?.[0]?.storefront || 'Amazon',
+    marketplace: user?.orders?.[0]?.marketplace || 'Amazon',
+    storefront: '',
     street: user?.orders?.[0]?.street || '',
     city: user?.orders?.[0]?.city || '',
     state: user?.orders?.[0]?.state || '',
@@ -355,6 +357,9 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     }
     if (!formState.storefront) {
       newErrors.storefront = 'Storefront name is required.';
+    }
+    if (!formState.marketplace) {
+      newErrors.marketplace = 'Marketplace name is required.';
     }
     if (!formState.street) {
       newErrors.street = 'Street is required.';
@@ -1002,31 +1007,52 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                         <p className="text-red-500 text-xs mt-1">{errors.company}</p>
                       )}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Marketplace <span className="text-red-600">*</span>
-                      </label>
-                      <Select
-                        value={formState.storefront}
-                        onValueChange={(v) =>
-                          setFormState((s: OrderFormState) => ({
-                            ...s,
-                            storefront: v,
-                          }))
-                        }
-                        defaultValue="Amazon"
-                      >
-                        <SelectTrigger className="w-full bg-white border border-[#e5e7eb] rounded-lg">
-                          <SelectValue placeholder="Select marketplace" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Amazon">Amazon</SelectItem>
-                          <SelectItem value="Walmart">Walmart</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {errors.storefront && (
-                        <p className="text-red-500 text-xs mt-1">{errors.storefront}</p>
-                      )}
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium mb-1">
+                          Marketplace <span className="text-red-600">*</span>
+                        </label>
+                        <Select
+                          value={formState.marketplace}
+                          onValueChange={(v) =>
+                            setFormState((s: OrderFormState) => ({
+                              ...s,
+                              marketplace: v,
+                            }))
+                          }
+                          defaultValue="Amazon"
+                        >
+                          <SelectTrigger className="w-full bg-white border border-[#e5e7eb] rounded-lg">
+                            <SelectValue placeholder="Select marketplace" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Amazon">Amazon</SelectItem>
+                            <SelectItem value="Walmart">Walmart</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {errors.marketplace && (
+                          <p className="text-red-500 text-xs mt-1">{errors.marketplace}</p>
+                        )}
+                      </div>
+
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium mb-1">Storefront</label>
+                        <Input
+                          disabled={!(formState.ungateAssistance === 'yes') ? true : false}
+                          type="text"
+                          placeholder="Enter storefront"
+                          value={formState.storefront}
+                          onChange={(e) =>
+                            setFormState((s: OrderFormState) => ({
+                              ...s,
+                              storefront: e.target.value,
+                            }))
+                          }
+                        />
+                        {errors.storefront && (
+                          <p className="text-red-500 text-xs mt-1">{errors.storefront}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
