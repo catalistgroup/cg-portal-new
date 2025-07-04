@@ -36,7 +36,7 @@ app.use(ErrorConfig.ErrorHandler);
 const PORT = process.env.PORT || 5000;
 
 // Initialize catalog import processor CRON JOB
-// catalogImportProcessor.init();
+catalogImportProcessor.init();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
