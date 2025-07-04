@@ -480,7 +480,7 @@ export class AdminController {
 
   async triggerCatalogImport(req: Request, res: Response) {
     try {
-      await catalogImportProcessor.triggerManual();
+      catalogImportProcessor.triggerManual();
       res.status(200).json({
         message: "Catalog import triggered successfully",
       });
