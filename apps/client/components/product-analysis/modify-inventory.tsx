@@ -22,10 +22,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '../ui/datatable';
 import { SelectableTableWrapper } from '../selectable-table';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
-import FilterComponent, {
-  FilterState,
-  initialFilterState,
-} from './filter-components';
+import FilterComponent, { FilterState, initialFilterState } from './filter-components';
 import { useFilteredCatalog } from './useFiltered';
 import api from '@/lib/api';
 import { toast } from 'sonner';
@@ -33,13 +30,7 @@ import MetricCard from '../metrics-card';
 import { Input } from '../ui/input';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useRoot } from '@/context/RootProvider';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -100,11 +91,11 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   });
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editProductSelected, setEditProductSelected] =
-    useState<CatalogType | null>(null);
+  const [editProductSelected, setEditProductSelected] = useState<CatalogType | null>(null);
   const [isBrandUpdateModalOpen, setIsBrandUpdateModalOpen] = useState(false);
-  const [brandSelectedForBulkUpdate, setBrandSelectedForBulkUpdate] =
-    useState<BrandType | null>(null);
+  const [brandSelectedForBulkUpdate, setBrandSelectedForBulkUpdate] = useState<BrandType | null>(
+    null,
+  );
   const [isBrandUpdateLoading, setIsBrandUpdateLoading] = useState(false);
 
   const catalogColumns: ColumnDef<CatalogType>[] = [
@@ -254,6 +245,8 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     selling_status: boolean;
     force_profitable_manual: boolean;
     profitable: boolean | null;
+    force_selling_price_manual: boolean;
+    selling_price: string;
   }) => {
     api
       .post(APIConfiguration.POST_UPDATE_CATALOG_PRODUCT_ADMIN, {
@@ -264,21 +257,18 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
       })
       .then((res) => {
         successToast(res.data.message || 'Product updated successfully');
-        // Update the specific item in the local state to avoid re-loading the page
-        queryClient.setQueryData<CatalogType[]>(
-          ['admin-catalogs'],
-          (oldData) => {
-            if (!oldData) return [];
 
-            return oldData.map((item) =>
-              item.asin === editProductSelected?.asin
-                ? {
-                    ...res.data.data,
-                  }
-                : item
-            );
-          }
-        );
+        queryClient.setQueryData<CatalogType[]>(['admin-catalogs'], (oldData) => {
+          if (!oldData) return [];
+
+          return oldData.map((item) =>
+            item.asin === editProductSelected?.asin
+              ? {
+                  ...res.data.data,
+                }
+              : item,
+          );
+        });
 
         handleEditClose();
       })
@@ -459,12 +449,10 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   };
 
   const totalAmount = useMemo(() => {
-    const selectedProducts = data.filter((f) =>
-      selected.includes(String(f.id))
-    );
+    const selectedProducts = data.filter((f) => selected.includes(String(f.id)));
     return selectedProducts.reduce(
       (a, b) => a + Number(b.selling_price) * (orderQuantities?.[b.id] || 1),
-      0
+      0,
     );
   }, [data, selected, orderQuantities]);
 
@@ -476,9 +464,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     fourteenDaysAgo.setDate(now.getDate() - 14);
 
     const recentBrands = new Set(
-      dt
-        .filter((item) => new Date(item.created_at) >= fourteenDaysAgo)
-        .map((item) => item.brand)
+      dt.filter((item) => new Date(item.created_at) >= fourteenDaysAgo).map((item) => item.brand),
     );
 
     const allBrands = new Set(dt.map((item) => item.brand));
@@ -499,9 +485,9 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
           p.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
           p.brand.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
           p.asin.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-          p.upc?.toLowerCase().includes(debouncedQuery.toLowerCase())
+          p.upc?.toLowerCase().includes(debouncedQuery.toLowerCase()),
       ),
-    [filtered, debouncedQuery]
+    [filtered, debouncedQuery],
   );
 
   const rootData = useRoot();
@@ -514,9 +500,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     fourteenDaysAgo.setDate(now.getDate() - 14);
 
     if (tab == 'latest') {
-      return searchFiltered.filter(
-        (item) => new Date(item.created_at) >= fourteenDaysAgo
-      );
+      return searchFiltered.filter((item) => new Date(item.created_at) >= fourteenDaysAgo);
     }
     return searchFiltered;
   }, [tab, searchFiltered]);
@@ -534,7 +518,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   const getOrderedItems = (
     selectedData: CatalogType[],
     orderQuantities: Record<number, number>,
-    formState: OrderFormState
+    formState: OrderFormState,
   ) => {
     const calculateSum = (array: any[], property: string) => {
       return array.reduce((sum, item) => sum + Number(item[property]), 0);
@@ -552,10 +536,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     let orderItems = [...baseItems];
     let invoiceTotal = calculateSum(baseItems, 'line_total');
 
-    if (
-      formState.prepRequired &&
-      formState.prepRequired.toLowerCase() !== 'no'
-    ) {
+    if (formState.prepRequired && formState.prepRequired.toLowerCase() !== 'no') {
       const totalUnits = calculateSum(baseItems, 'quantity');
       const prepFeeTotal = totalUnits * PRE_RATE;
 
@@ -657,21 +638,18 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
       })
       .then((res) => {
         // here insted reloading the page in want to update the state of the catalogs
-        queryClient.setQueryData<CatalogType[]>(
-          ['admin-catalogs'],
-          (oldData) => {
-            if (!oldData) return [];
+        queryClient.setQueryData<CatalogType[]>(['admin-catalogs'], (oldData) => {
+          if (!oldData) return [];
 
-            return oldData.map((item) =>
-              item.brand === brandSelectedForBulkUpdate?.name
-                ? {
-                    ...item,
-                    selling_status: data.selling_status,
-                  }
-                : item
-            );
-          }
-        );
+          return oldData.map((item) =>
+            item.brand === brandSelectedForBulkUpdate?.name
+              ? {
+                  ...item,
+                  selling_status: data.selling_status,
+                }
+              : item,
+          );
+        });
         successToast(res?.data?.message || 'Brand updated successfully');
       })
       .catch((err) => {
@@ -695,21 +673,17 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
   const { items: displayItems, total: calculatedTotal } = getOrderedItems(
     data.filter((d) => selected.includes(String(d.id))),
     orderQuantities,
-    formState
+    formState,
   );
 
   const handleDownloadCSV = () => {
     const dataColumns = catalogColumns.filter(
-      (
-        col
-      ): col is ColumnDef<CatalogType> & { accessorKey: keyof CatalogType } =>
-        typeof (col as any).accessorKey === 'string'
+      (col): col is ColumnDef<CatalogType> & { accessorKey: keyof CatalogType } =>
+        typeof (col as any).accessorKey === 'string',
     );
 
     const headers = dataColumns
-      .map((col) =>
-        typeof col.header === 'function' ? '' : String(col.header)
-      )
+      .map((col) => (typeof col.header === 'function' ? '' : String(col.header)))
       .join(',');
 
     const rows = data.map((item) =>
@@ -719,7 +693,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
           const value = raw != null ? raw.toString() : '';
           return `"${value.replace(/"/g, '""')}"`;
         })
-        .join(',')
+        .join(','),
     );
 
     const csvContent = [headers, ...rows].join('\n');
@@ -730,7 +704,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
     link.setAttribute('href', url);
     link.setAttribute(
       'download',
-      `CatalistGroup_catalog_${new Date().toISOString().slice(0, 10)}.csv`
+      `CatalistGroup_catalog_${new Date().toISOString().slice(0, 10)}.csv`,
     );
     link.click();
   };
@@ -744,8 +718,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
       {showOrderPanel && (
         <div className="flex items-center justify-between mb-4">
           <div className="text-sm text-gray-500">
-            Please make sure you read our FAQ in entirety before completing an
-            order form.
+            Please make sure you read our FAQ in entirety before completing an order form.
           </div>
           <div
             onClick={() => {
@@ -825,26 +798,18 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                       >
                         <SelectTrigger
                           className={`w-full bg-white border ${
-                            errors.paymentMethod
-                              ? 'border-red-500'
-                              : 'border-[#e5e7eb]'
+                            errors.paymentMethod ? 'border-red-500' : 'border-[#e5e7eb]'
                           } rounded-lg`}
                         >
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="credit_card">
-                            Credit Card (2.99% Fee)
-                          </SelectItem>
-                          <SelectItem value="wire_ach">
-                            Wire/ACH (No Fee)
-                          </SelectItem>
+                          <SelectItem value="credit_card">Credit Card (2.99% Fee)</SelectItem>
+                          <SelectItem value="wire_ach">Wire/ACH (No Fee)</SelectItem>
                         </SelectContent>
                       </Select>
                       {errors.paymentMethod && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.paymentMethod}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.paymentMethod}</p>
                       )}
                     </div>
                     <div>
@@ -862,9 +827,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                       >
                         <SelectTrigger
                           className={`w-full bg-white border ${
-                            errors.prepRequired
-                              ? 'border-red-500'
-                              : 'border-[#e5e7eb]'
+                            errors.prepRequired ? 'border-red-500' : 'border-[#e5e7eb]'
                           } rounded-lg`}
                         >
                           <SelectValue placeholder="Select" />
@@ -876,9 +839,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                         </SelectContent>
                       </Select>
                       {errors.prepRequired && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.prepRequired}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.prepRequired}</p>
                       )}
                     </div>
                   </div>
@@ -889,24 +850,18 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                     <HelpingHand />
                     <h3 className="text-base font-semibold">
                       Ungating Assistance{' '}
-                      <span className="text-red-600 font-semibold">
-                        (Mandatory)
-                      </span>
+                      <span className="text-red-600 font-semibold">(Mandatory)</span>
                     </h3>
                   </div>
                   <ol className="list-decimal text-sm text-gray-600 pl-5 space-y-1">
                     <li>
-                      After submitting this form, send a user permissions
-                      invitation to{' '}
-                      <span className="font-medium">
-                        ungate@catalistgroup.co
-                      </span>
+                      After submitting this form, send a user permissions invitation to{' '}
+                      <span className="font-medium">ungate@catalistgroup.co</span>
                     </li>
                     <li>Our team will accept the invitation.</li>
                     <li>
-                      Once accepted please grant View/Edit access for Manage
-                      Inventory, Add a Product, Manage Selling Applications,
-                      Manage Case Log.
+                      Once accepted please grant View/Edit access for Manage Inventory, Add a
+                      Product, Manage Selling Applications, Manage Case Log.
                     </li>
                   </ol>
                   <div className="flex items-center gap-6 mt-2">
@@ -939,9 +894,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                       <span className="text-sm">No</span>
                     </label>
                     {errors.ungateAssistance && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {errors.ungateAssistance}
-                      </p>
+                      <p className="text-red-500 text-xs mt-1">{errors.ungateAssistance}</p>
                     )}
                   </div>
                 </div>
@@ -969,9 +922,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                         }
                       />
                       {errors.firstName && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.firstName}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
                       )}
                     </div>
                     <div>
@@ -989,9 +940,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                         }
                       />
                       {errors.lastName && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.lastName}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
                       )}
                     </div>
                     <div>
@@ -1009,11 +958,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                           }))
                         }
                       />
-                      {errors.email && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.email}
-                        </p>
-                      )}
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1021,11 +966,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                       </label>
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center px-2 py-1 border border-[#e5e7eb] bg-white rounded-md">
-                          <img
-                            src="https://flagcdn.com/us.svg"
-                            alt="US"
-                            className="w-5 h-5 mr-1"
-                          />
+                          <img src="https://flagcdn.com/us.svg" alt="US" className="w-5 h-5 mr-1" />
                           <span className="text-xs font-medium">+1</span>
                         </span>
                         <Input
@@ -1041,11 +982,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                           className="flex-1"
                         />
                       </div>
-                      {errors.phone && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.phone}
-                        </p>
-                      )}
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1062,9 +999,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                         }
                       />
                       {errors.company && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.company}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.company}</p>
                       )}
                     </div>
                     <div>
@@ -1090,9 +1025,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                         </SelectContent>
                       </Select>
                       {errors.storefront && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.storefront}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.storefront}</p>
                       )}
                     </div>
                   </div>
@@ -1121,15 +1054,11 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                         }
                       />
                       {errors.street && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.street}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.street}</p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">
-                        City/Suburb
-                      </label>
+                      <label className="block text-sm font-medium mb-1">City/Suburb</label>
                       <Input
                         placeholder="Enter city/suburb"
                         value={formState.city}
@@ -1140,11 +1069,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                           }))
                         }
                       />
-                      {errors.city && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.city}
-                        </p>
-                      )}
+                      {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1160,11 +1085,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                           }))
                         }
                       />
-                      {errors.zip && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.zip}
-                        </p>
-                      )}
+                      {errors.zip && <p className="text-red-500 text-xs mt-1">{errors.zip}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1180,11 +1101,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                           }))
                         }
                       />
-                      {errors.state && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.state}
-                        </p>
-                      )}
+                      {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1203,15 +1120,11 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                           <SelectValue placeholder="United States" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="United States">
-                            United States
-                          </SelectItem>
+                          <SelectItem value="United States">United States</SelectItem>
                         </SelectContent>
                       </Select>
                       {errors.billingCountry && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.billingCountry}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.billingCountry}</p>
                       )}
                     </div>
                   </div>
@@ -1341,15 +1254,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
           <div className="flex-1 bg-white rounded-xl border border-[#e5e7eb] p-6 flex items-start gap-3">
             <span className="mt-1 text-blue-500">
               <svg width="24" height="24" fill="none">
-                <rect
-                  x="4"
-                  y="4"
-                  width="16"
-                  height="16"
-                  rx="3"
-                  stroke="#2563EB"
-                  strokeWidth="2"
-                />
+                <rect x="4" y="4" width="16" height="16" rx="3" stroke="#2563EB" strokeWidth="2" />
                 <path
                   d="M8 8h8M8 12h8M8 16h4"
                   stroke="#2563EB"
@@ -1360,27 +1265,17 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
               </svg>
             </span>
             <div>
-              <div className="font-semibold text-base mb-1">
-                Terms and Conditions
-              </div>
+              <div className="font-semibold text-base mb-1">Terms and Conditions</div>
               <div className="text-sm text-gray-600">
-                By submitting this order sheet, you agree to abide by the terms
-                and conditions outlined by Catalist Group LLC.
+                By submitting this order sheet, you agree to abide by the terms and conditions
+                outlined by Catalist Group LLC.
               </div>
             </div>
           </div>
           <div className="flex-1 bg-white rounded-xl border border-[#e5e7eb] p-6 flex items-start gap-3">
             <span className="mt-1 text-blue-500">
               <svg width="24" height="24" fill="none">
-                <rect
-                  x="4"
-                  y="4"
-                  width="16"
-                  height="16"
-                  rx="3"
-                  stroke="#2563EB"
-                  strokeWidth="2"
-                />
+                <rect x="4" y="4" width="16" height="16" rx="3" stroke="#2563EB" strokeWidth="2" />
                 <path
                   d="M8 8h8M8 12h8M8 16h4"
                   stroke="#2563EB"
@@ -1391,9 +1286,7 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
               </svg>
             </span>
             <div>
-              <div className="font-semibold text-base mb-1">
-                Questions? Get in Touch
-              </div>
+              <div className="font-semibold text-base mb-1">Questions? Get in Touch</div>
               <div className="text-sm text-gray-600">
                 Catalist Group LLC &bull;{' '}
                 <a href="mailto:sales@catalistgroup.co" className="underline">
@@ -1410,13 +1303,10 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
         <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-600">
-                Low Quantity Warning
-              </AlertDialogTitle>
+              <AlertDialogTitle className="text-red-600">Low Quantity Warning</AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
                 <p className="font-medium">
-                  The following items have quantities less than their Minimum
-                  Order Quantity (MOQ):
+                  The following items have quantities less than their Minimum Order Quantity (MOQ):
                 </p>
                 <div className="max-h-[200px] overflow-y-auto">
                   <ul className="list-disc font-bold pl-4 space-y-3">
@@ -1430,25 +1320,21 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                           {item.asin}
                         </span>
                         <span className="truncate max-w-[180px] font-medium">
-                          {item.name?.length > 80
-                            ? item.name.slice(0, 80) + '...'
-                            : item.name}
+                          {item.name?.length > 80 ? item.name.slice(0, 80) + '...' : item.name}
                         </span>
                         <span className="ml-auto flex items-center gap-2">
                           <span className="text-gray-500">MOQ:</span>
                           <span className="font-semibold">{item.moq}</span>
                           <span className="text-gray-400">/</span>
-                          <span className="text-red-600 font-semibold">
-                            {item.quantity} units
-                          </span>
+                          <span className="text-red-600 font-semibold">{item.quantity} units</span>
                         </span>
                       </li>
                     ))}
                   </ul>
                 </div>
                 <p className="font-medium mt-4">
-                  This order needs to be approved by one of our team members. Do
-                  you want to proceed with the order anyway?
+                  This order needs to be approved by one of our team members. Do you want to proceed
+                  with the order anyway?
                 </p>
               </AlertDialogDescription>
             </AlertDialogHeader>

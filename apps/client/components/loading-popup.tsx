@@ -51,5 +51,5 @@ export default function LoadingPopup({
   );
 
   // Use portal to render outside normal DOM hierarchy
-  return createPortal(popupContent, document.body);
+  return createPortal(popupContent, document?.body || document.createElement('body'));
 }
