@@ -1036,9 +1036,11 @@ export function ModifyInventory({ storeId, stores, isAdmin }: Props) {
                       </div>
 
                       <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Storefront</label>
+                        <label className="block text-sm font-medium mb-1">
+                          Storefront <span className="text-red-600">*</span>
+                        </label>
                         <Input
-                          disabled={!(formState.ungateAssistance === 'yes') ? true : false}
+                          //   disabled={!(formState.ungateAssistance === 'yes') ? true : false}
                           type="text"
                           placeholder="Enter storefront"
                           value={formState.storefront}
