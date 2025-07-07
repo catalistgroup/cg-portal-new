@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import APIConfiguration from '@/lib/endpoints';
 import { BrandType } from '@/types';
+import ButtonGroup from '../ui/buttonGroup';
 
 interface OrderFormState {
   paymentMethod: string;
@@ -197,6 +198,8 @@ export function ProductAnalysis({ storeId, stores }: Props) {
   const [isCreatingOrder, setCreatingOrder] = useState(false);
 
   const { user } = useRoot();
+
+  const isAdmin = user.is_superuser;
 
   const storeName = useMemo(() => {
     return stores?.find((v: StoreType) => v.id == Number(storeId))?.name;
@@ -1060,29 +1063,34 @@ export function ProductAnalysis({ storeId, stores }: Props) {
                 onCleared={() => setFilters(initialFilterState)}
               />
 
-              <div
-                className={`flex flex-col md:flex-row gap-y-5 mt-10 ${rootData.user?.type == 'store' ? '' : 'pt-8'} items-center justify-between`}
-              >
-                <div className="relative flex items-center gap-3">
-                  <div className="relative max-w-[500px] w-full">
-                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="search"
-                      placeholder="Search products..."
-                      className="min-w-80 pl-9 rounded-xl border-black/10 w-full"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    onClick={handleDownloadCSV}
-                    disabled={isLoading}
-                    className="rounded-xl border-blue-700 bg-blue-600 text-white border-2 transition-opacity duration-200"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download CSV
-                  </Button>
+              {/* Searchbar & download btn  */}
+              <div className="relative flex items-end justify-between gap-3 p-6">
+                <div className="relative max-w-[500px] w-full">
+                  <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search products..."
+                    className="min-w-80 pl-9 rounded-xl border-black/10 w-full"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
+                <Button
+                  onClick={handleDownloadCSV}
+                  disabled={isLoading}
+                  className="rounded-xl bg-transparent text-blue-600 hover:bg-transparent"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download CSV
+                </Button>
+              </div>
+
+              {/* preset btns and create order btn */}
+              <div
+                className={`flex flex-col md:flex-row gap-y-5 mt-4 ${rootData.user?.type == 'store' ? '' : 'pt-4'} items-center justify-between px-6`}
+              >
+                {isAdmin && <ButtonGroup />}
+
                 <div className="flex items-center gap-5">
                   <div className="text-sm">
                     {selected.length} product

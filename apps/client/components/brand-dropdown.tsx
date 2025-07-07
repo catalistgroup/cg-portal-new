@@ -61,8 +61,8 @@ export default function BrandDropdown({
   };
 
   return (
-    <div className={cn('flex items-center gap-2 text-black', className)}>
-      <p className="text-sm font-medium">{label}</p>
+    <div className={cn('flex flex-col items-center gap-2 text-black', className)}>
+      <p className="text-sm font-semibold w-full">{label}</p>
       <Select
         disabled={disabled}
         value={selectedBrand?.id.toString() || ''}
