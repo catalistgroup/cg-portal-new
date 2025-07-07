@@ -5,7 +5,7 @@ import {
   calcSellingPrice,
 } from "../utils/catalog-helper-function";
 import axios from "axios";
-import { EXTERNAL_WEBHOOK_TOKEN } from "../constants";
+import { EXTERNAL_API_URL, EXTERNAL_WEBHOOK_TOKEN } from "../constants";
 
 const prisma = new PrismaClient();
 
@@ -389,7 +389,7 @@ class CatalogImportProcessor {
   }): Promise<void> {
     try {
       const response = await axios.post(
-        "https://catalistgroup.app.n8n.cloud/webhook/catalog-upload-status",
+        `${EXTERNAL_API_URL}/webhook/catalog-upload-status`,
         body,
         {
           headers: {

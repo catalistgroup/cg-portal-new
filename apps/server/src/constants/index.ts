@@ -17,5 +17,7 @@ export const PRICING_CONFIG = {
 
 export const MIN_PROFIT_PER_ITEM = 250;
 
+export const EXTERNAL_API_URL = "https://catalistgroup.app.n8n.cloud";
+
 export const EXTERNAL_WEBHOOK_TOKEN =
   "umJVIiXgSMQXokdeGTBvCk5B2rpQKKrXyk8ACgMMD4iP9bc8TjQ3urEImJEtfAhZ";

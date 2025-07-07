@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import prisma from "../configs/database";
 import HttpError from "../utils/HttpError";
 import { purchaseOrderSchema } from "../validators/purchaseOrderValidator";
+import { EXTERNAL_API_URL, EXTERNAL_WEBHOOK_TOKEN } from "../constants";
 import axios from "axios";
 
 export class PurchaseOrderController {
@@ -11,10 +12,10 @@ export class PurchaseOrderController {
     let attempts = 0;
 
     const generateId = () => {
-      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const numbers = '0123456789';
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const numbers = "0123456789";
 
-      let id = '';
+      let id = "";
       for (let i = 0; i < 2; i++) {
         id += letters.charAt(Math.floor(Math.random() * letters.length));
       }
@@ -36,12 +37,14 @@ export class PurchaseOrderController {
         }
         attempts++;
       } catch (error) {
-        console.error('Error generating order ID:', error);
-        throw new Error('Failed to generate unique order ID');
+        console.error("Error generating order ID:", error);
+        throw new Error("Failed to generate unique order ID");
       }
     }
 
-    throw new Error('Failed to generate unique order ID after maximum attempts');
+    throw new Error(
+      "Failed to generate unique order ID after maximum attempts",
+    );
   }
 
   private static calculateOrderFees(order: any) {
@@ -49,12 +52,16 @@ export class PurchaseOrderController {
     const CREDIT_CARD_RATE = 0.0299;
 
     let feeItems = [];
-    let totalAmount = order.items.reduce((sum: number, item: any) =>
-      sum + (item.unit_price * item.quantity), 0);
+    let totalAmount = order.items.reduce(
+      (sum: number, item: any) => sum + item.unit_price * item.quantity,
+      0,
+    );
 
     if (order.prepRequired?.toLowerCase() !== "no") {
-      const totalUnits = order.items.reduce((sum: number, item: any) =>
-        sum + item.quantity, 0);
+      const totalUnits = order.items.reduce(
+        (sum: number, item: any) => sum + item.quantity,
+        0,
+      );
       const prepFeeTotal = totalUnits * PRE_RATE;
 
       feeItems.push({
@@ -67,7 +74,7 @@ export class PurchaseOrderController {
         sku: "",
         upc: "",
         supplier: "AMZ Connect",
-        purchase_order_id: order.id
+        purchase_order_id: order.id,
       });
 
       totalAmount += prepFeeTotal;
@@ -86,7 +93,7 @@ export class PurchaseOrderController {
         sku: "",
         upc: "",
         supplier: "AMZ Connect",
-        purchase_order_id: order.id
+        purchase_order_id: order.id,
       });
     }
 
@@ -116,7 +123,7 @@ export class PurchaseOrderController {
     try {
       const order = await prisma.purchaseOrder.findFirst({
         where: { id, user_id: userId },
-        include: { items: true }
+        include: { items: true },
       });
 
       if (!order)
@@ -125,7 +132,7 @@ export class PurchaseOrderController {
       const feeItems = PurchaseOrderController.calculateOrderFees(order);
       const responseOrder = {
         ...order,
-        items: [...order.items, ...feeItems]
+        items: [...order.items, ...feeItems],
       };
 
       res.json(responseOrder);
@@ -143,14 +150,14 @@ export class PurchaseOrderController {
 
     const order = await prisma.purchaseOrder.findFirst({
       where: { id, user_id: userId },
-      include: { items: true }
+      include: { items: true },
     });
     if (!order) throw new HttpError("Order not found");
 
     const feeItems = PurchaseOrderController.calculateOrderFees(order);
     const responseOrder = {
       ...order,
-      items: [...order.items, ...feeItems]
+      items: [...order.items, ...feeItems],
     };
 
     res.status(200).json(responseOrder);
@@ -171,11 +178,11 @@ export class PurchaseOrderController {
       },
     });
 
-    const responseOrders = orders.map(order => {
+    const responseOrders = orders.map((order) => {
       const feeItems = PurchaseOrderController.calculateOrderFees(order);
       return {
         ...order,
-        items: [...order.items, ...feeItems]
+        items: [...order.items, ...feeItems],
       };
     });
 
@@ -246,7 +253,7 @@ export class PurchaseOrderController {
 
       try {
         const response = await axios.post(
-          "https://catalistgroup.app.n8n.cloud/webhook/post_api_order",
+          `${EXTERNAL_API_URL}/webhook/post_api_order`,
           {
             payment_method: paymentMethod,
             prep_required: prepRequired,
@@ -271,16 +278,15 @@ export class PurchaseOrderController {
                 acc[item.asin] = String(item.quantity);
                 return acc;
               },
-              {}
+              {},
             ),
           },
           {
             headers: {
-              Authorization:
-                "Bearer umJVIiXgSMQXokdeGTBvCk5B2rpQKKrXyk8ACgMMD4iP9bc8TjQ3urEImJEtfAhZ",
+              Authorization: `Bearer ${EXTERNAL_WEBHOOK_TOKEN}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         await prisma.purchaseOrder.update({
@@ -297,9 +303,9 @@ export class PurchaseOrderController {
 
       res.status(200).json(order);
     } catch (error: any) {
-      console.error('Error creating purchase order:', error);
+      console.error("Error creating purchase order:", error);
       res.status(500).json({
-        error: error.message || "Failed to create purchase order"
+        error: error.message || "Failed to create purchase order",
       });
     }
   }
@@ -315,14 +321,14 @@ export class PurchaseOrderController {
 
       // Get the order with items
       const order = await prisma.purchaseOrder.findFirst({
-        where: { 
+        where: {
           id: orderId,
           store_id: storeId,
-          user_id: userId 
+          user_id: userId,
         },
-        include: { 
-          items: true 
-        }
+        include: {
+          items: true,
+        },
       });
 
       if (!order) {
@@ -331,7 +337,7 @@ export class PurchaseOrderController {
 
       try {
         const response = await axios.post(
-          "https://catalistgroup.app.n8n.cloud/webhook/post_api_order",
+          `${EXTERNAL_API_URL}/webhook/post_api_order`,
           {
             payment_method: order.paymentMethod,
             prep_required: order.prepRequired,
@@ -356,15 +362,15 @@ export class PurchaseOrderController {
                 acc[item.asin] = String(item.quantity);
                 return acc;
               },
-              {}
+              {},
             ),
           },
           {
             headers: {
-              Authorization: "Bearer umJVIiXgSMQXokdeGTBvCk5B2rpQKKrXyk8ACgMMD4iP9bc8TjQ3urEImJEtfAhZ",
+              Authorization: `Bearer ${EXTERNAL_WEBHOOK_TOKEN}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         await prisma.purchaseOrder.update({
@@ -372,14 +378,13 @@ export class PurchaseOrderController {
           data: { is_api_succeed: response.status === 200 },
         });
 
-        res.status(200).json({ 
-          success: true, 
-          message: "Order resent successfully" 
+        res.status(200).json({
+          success: true,
+          message: "Order resent successfully",
         });
-
       } catch (err) {
         console.error("Failed to resend order to external API", err);
-        
+
         await prisma.purchaseOrder.update({
           where: { id: orderId },
           data: { is_api_succeed: false },
@@ -387,12 +392,11 @@ export class PurchaseOrderController {
 
         throw new HttpError("Failed to resend order to external API");
       }
-
     } catch (error: any) {
-      console.error('Error resending purchase order:', error);
+      console.error("Error resending purchase order:", error);
       res.status(500).json({
         success: false,
-        error: error.message || "Failed to resend purchase order"
+        error: error.message || "Failed to resend purchase order",
       });
     }
   }
