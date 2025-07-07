@@ -4,6 +4,8 @@ import {
   calcWholesalePrice,
   calcSellingPrice,
 } from "../utils/catalog-helper-function";
+import axios from "axios";
+import { EXTERNAL_API_URL, EXTERNAL_WEBHOOK_TOKEN } from "../constants";
 
 const prisma = new PrismaClient();
 
@@ -146,6 +148,11 @@ class CatalogImportProcessor {
       this.isRunning = false;
       this.stats.endTime = new Date();
       console.log("Catalog import process completed");
+      // Send webhook to n8n to update the status of the catalog import
+      await this.sendWebhook({
+        id: 0,
+        status: "complete",
+      });
     }
   }
 
@@ -376,6 +383,28 @@ class CatalogImportProcessor {
     });
   }
 
+  async sendWebhook(body: {
+    id: number;
+    status: "complete" | "error" | "in_progress";
+  }): Promise<void> {
+    try {
+      const response = await axios.post(
+        `${EXTERNAL_API_URL}/webhook/catalog-upload-status`,
+        body,
+        {
+          headers: {
+            Authorization: `Bearer ${EXTERNAL_WEBHOOK_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      console.log("Webhook sent:", response.data);
+    } catch (error) {
+      console.error("Error sending webhook:");
+    }
+  }
+
   async resolveBrandId(brandName: string): Promise<BrandResolution> {
     if (!brandName) return { id: null, name: null };
 
@@ -507,6 +536,10 @@ class CatalogImportProcessor {
 
   async sendErrorNotification(error: Error): Promise<void> {
     // TODO: add notification. Examples: Email, Slack, Discord, etc.
+    await this.sendWebhook({
+      id: 0,
+      status: "error",
+    });
     console.error("Critical Error Notification:", {
       error: error.message,
       stack: error.stack,

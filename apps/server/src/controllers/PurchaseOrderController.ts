@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import prisma from "../configs/database";
 import HttpError from "../utils/HttpError";
 import { purchaseOrderSchema } from "../validators/purchaseOrderValidator";
+import { EXTERNAL_API_URL, EXTERNAL_WEBHOOK_TOKEN } from "../constants";
 import axios from "axios";
 
 export class PurchaseOrderController {
@@ -252,7 +253,7 @@ export class PurchaseOrderController {
 
       try {
         const response = await axios.post(
-          "https://catalistgroup.app.n8n.cloud/webhook/post_api_order",
+          `${EXTERNAL_API_URL}/webhook/post_api_order`,
           {
             payment_method: paymentMethod,
             prep_required: prepRequired,
@@ -282,8 +283,7 @@ export class PurchaseOrderController {
           },
           {
             headers: {
-              Authorization:
-                "Bearer umJVIiXgSMQXokdeGTBvCk5B2rpQKKrXyk8ACgMMD4iP9bc8TjQ3urEImJEtfAhZ",
+              Authorization: `Bearer ${EXTERNAL_WEBHOOK_TOKEN}`,
               "Content-Type": "application/json",
             },
           },
@@ -337,7 +337,7 @@ export class PurchaseOrderController {
 
       try {
         const response = await axios.post(
-          "https://catalistgroup.app.n8n.cloud/webhook/post_api_order",
+          `${EXTERNAL_API_URL}/webhook/post_api_order`,
           {
             payment_method: order.paymentMethod,
             prep_required: order.prepRequired,
@@ -362,15 +362,15 @@ export class PurchaseOrderController {
                 acc[item.asin] = String(item.quantity);
                 return acc;
               },
-              {}
+              {},
             ),
           },
           {
             headers: {
-              Authorization: "Bearer umJVIiXgSMQXokdeGTBvCk5B2rpQKKrXyk8ACgMMD4iP9bc8TjQ3urEImJEtfAhZ",
+              Authorization: `Bearer ${EXTERNAL_WEBHOOK_TOKEN}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         await prisma.purchaseOrder.update({
