@@ -77,7 +77,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 font-bold text-left whitespace-nowrap align-middle text-white bg-catalogue_primary-background font-[Inter]", // Ensure header has a background
+      "h-12 px-4 font-bold text-left whitespace-nowrap align-middle text-catalogue_primary-background bg-catalogue_primary-tableHeader font-[Inter]", // Ensure header has a background
       className
     )}
     {...props}
