@@ -31,10 +31,10 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ isLoading = false }) => {
         <div
           key={label}
           onClick={() => handleClick(label)}
-          className="inline-flex items-center justify-center p-[1px] rounded-full bg-gradient-to-r from-[#F208FD] to-[#0B24FB] cursor-pointer"
+          className="inline-flex items-center justify-center p-[1px] rounded-md bg-gradient-to-r from-[#F208FD] to-[#0B24FB] cursor-pointer"
         >
           <div
-            className={`flex items-center gap-2 rounded-full px-4 py-1 ${
+            className={`flex items-center gap-2 rounded-md px-4 py-1 ${
               selected === label
                 ? 'bg-filter_section-selectedBtn text-white border border-transparent'
                 : 'bg-white'

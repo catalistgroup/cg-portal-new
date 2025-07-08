@@ -60,6 +60,7 @@ const config = {
         filter_section: {
           background: 'rgba(234, 234, 234, 1)',
           selectedBtn: 'rgba(1, 22, 56, 1)',
+          downloadBtn: 'rgba(11, 36, 251, 1)',
         },
       },
       borderRadius: {

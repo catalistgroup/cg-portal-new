@@ -95,13 +95,15 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
       <div className="grid flex-1 gap-6 md:grid-cols-4">
         {/* Price Filter */}
         <div className="flex flex-col items-center gap-2 sm:gap-3">
-          <span className="text-sm font-semibold w-full">Price ($)</span>
+          <span className="text-sm font-bold w-full text-catalogue_primary-background">
+            Price ($)
+          </span>
           <div className="flex flex-1 w-full">
             <Select
               value={state.priceComparator}
               onValueChange={(v) => dispatch({ type: 'SET_PRICE_COMPARATOR', payload: v })}
             >
-              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-0">
+              <SelectTrigger className="w-20 rounded-l-lg rounded-r-none border-r-0 border-0 font-semibold">
                 {state.priceComparator}
               </SelectTrigger>
               <SelectContent>
@@ -112,7 +114,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                 <SelectItem value="<=">is less than or equal to</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex bg-white items-center rounded-r-full pr-4">
+            <div className="flex bg-white items-center rounded-r-lg pr-4">
               <button
                 type="button"
                 onClick={() =>
@@ -121,7 +123,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                     payload: String(Math.max(0, Number(state.priceValue || 0) - 1)),
                   })
                 }
-                className="rounded-full bg-gray-300 h-6 w-7 text-white"
+                className="text-[12px] bg-gray-300 w-[1.3rem] rounded-md text-white"
               >
                 -
               </button>
@@ -130,7 +132,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                 placeholder="Enter price"
                 value={state.priceValue}
                 onChange={(e) => dispatch({ type: 'SET_PRICE_VALUE', payload: e.target.value })}
-                className="rounded-r-full border-none text-center placeholder:text-center"
+                className="rounded-none border-none text-center placeholder:text-center"
               />
               <button
                 type="button"
@@ -140,7 +142,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                     payload: String(Number(state.priceValue || 0) + 1),
                   })
                 }
-                className="rounded-full bg-gray-300 h-6 w-7 text-white"
+                className="text-[12px] bg-gray-300 w-[1.3rem] rounded-md text-white"
               >
                 +
               </button>
@@ -150,13 +152,13 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
 
         {/* Profit Filter */}
         <div className="flex flex-col items-center gap-2 sm:gap-3">
-          <span className="text-sm font-semibold w-full">Profit</span>
+          <span className="text-sm font-bold w-full text-catalogue_primary-background">Profit</span>
           <div className="flex flex-1 w-full">
             <Select
               value={state.profitComparator}
               onValueChange={(v) => dispatch({ type: 'SET_PROFIT_COMPARATOR', payload: v })}
             >
-              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-0">
+              <SelectTrigger className="w-20 rounded-l-lg rounded-r-none border-r-0 border-0 font-semibold">
                 {state.profitComparator}
               </SelectTrigger>
               <SelectContent>
@@ -167,7 +169,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                 <SelectItem value="<=">is less than or equal to</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex bg-white items-center rounded-r-full pr-4">
+            <div className="flex bg-white items-center rounded-r-lg pr-4">
               <button
                 type="button"
                 onClick={() =>
@@ -176,7 +178,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                     payload: String(Math.max(0, Number(state.profitValue || 0) - 1)),
                   })
                 }
-                className="rounded-full bg-gray-300 h-6 w-7 text-white"
+                className="text-[12px] bg-gray-300 w-[1.3rem] rounded-full text-white"
               >
                 -
               </button>
@@ -201,7 +203,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                     payload: String(Number(state.profitValue || 0) + 1),
                   })
                 }
-                className="rounded-full bg-gray-300 h-6 w-7 text-white"
+                className="text-[12px] bg-gray-300 w-[1.3rem] rounded-full text-white"
               >
                 +
               </button>
@@ -211,13 +213,13 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
 
         {/* Margin Filter */}
         <div className="flex flex-col items-center gap-2 sm:gap-3">
-          <span className="text-sm font-semibold w-full">Margin</span>
+          <span className="text-sm font-bold w-full text-catalogue_primary-background">Margin</span>
           <div className="flex flex-1 w-full">
             <Select
               value={state.marginComparator}
               onValueChange={(v) => dispatch({ type: 'SET_MARGIN_COMPARATOR', payload: v })}
             >
-              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-0">
+              <SelectTrigger className="w-20 rounded-l-lg rounded-r-none border-r-0 border-0 font-semibold">
                 {state.marginComparator}
               </SelectTrigger>
               <SelectContent>
@@ -228,7 +230,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                 <SelectItem value="<=">is less than or equal to</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex bg-white items-center rounded-r-full pr-4">
+            <div className="flex bg-white items-center rounded-r-lg pr-4">
               <button
                 type="button"
                 onClick={() =>
@@ -237,7 +239,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                     payload: String(Math.max(0, Number(state.marginValue || 0) - 1)),
                   })
                 }
-                className="rounded-full bg-gray-300 h-6 w-7 text-white"
+                className="text-[12px] bg-gray-300 w-[1.3rem] rounded-full text-white"
               >
                 -
               </button>
@@ -262,7 +264,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
                     payload: String(Number(state.marginValue || 0) + 1),
                   })
                 }
-                className="rounded-full bg-gray-300 h-6 w-7 text-white"
+                className="text-[12px] bg-gray-300 w-[1.3rem] rounded-full text-white"
               >
                 +
               </button>
@@ -281,7 +283,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
         />
       </div>
 
-      <div className="flex justify-end items-center pl-5 mt-5">
+      <div className="flex justify-end items-center pl-5 mt-7">
         <div className="flex gap-3">
           {/* <Button
               variant="outline"

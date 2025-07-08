@@ -27,8 +27,8 @@ export default function BrandDropdown({
   brands,
   selectedBrand,
   onBrandSelect,
-  label = 'Brand:',
-  placeholder = 'Select a brand',
+  label = 'Brand',
+  placeholder = 'Select',
   disabled = false,
   className,
 }: BrandDropdownProps) {
