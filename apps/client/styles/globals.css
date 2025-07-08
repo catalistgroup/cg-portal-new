@@ -72,17 +72,28 @@
 }
 
 .data-table-row:nth-child(odd) {
-  background-color: #FBFBFB;
+  background-color: #fbfbfb;
 }
 .data-table-row:nth-child(even) {
-  background-color: #EBEDF0;
+  background-color: #ebedf0;
 }
 
 input::placeholder {
-  color: #9CA3AF !important; /* Medium gray color */
+  color: #9ca3af !important; /* Medium gray color */
   opacity: 0.8;
 }
 
+/* For WebKit browsers (Chrome, Safari, Edge, Opera) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Important to remove any default margin */
+}
+
+/* For Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
 
 /* Global Scrollbar Styles */
 ::-webkit-scrollbar {
