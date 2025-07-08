@@ -54,6 +54,7 @@ const config = {
           foreground: 'hsl(var(--card-foreground))',
         },
         catalogue_primary: {
+          tableHeader: 'rgba(235, 237, 240, 1)',
           background: 'rgba(1, 22, 56, 1)',
           subTitle: 'rgba(0, 0, 0, 1)',
         },
@@ -61,6 +62,7 @@ const config = {
           background: 'rgba(234, 234, 234, 1)',
           selectedBtn: 'rgba(1, 22, 56, 1)',
           downloadBtn: 'rgba(11, 36, 251, 1)',
+          scheduleBtn: 'rgba(11, 36, 251, 1)',
         },
       },
       borderRadius: {
