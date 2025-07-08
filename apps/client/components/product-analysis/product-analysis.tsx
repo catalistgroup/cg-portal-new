@@ -1071,10 +1071,10 @@ export function ProductAnalysis({ storeId, stores }: Props) {
               {/* Searchbar & download btn  */}
               <div className="relative flex items-end justify-between gap-3 p-6">
                 <div className="relative max-w-[500px] w-full">
-                  <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-black" />
                   <Input
                     type="search"
-                    placeholder="Search products..."
+                    placeholder="Search products"
                     className="min-w-80 pl-9 rounded-xl border-black/10 w-full"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -1083,9 +1083,9 @@ export function ProductAnalysis({ storeId, stores }: Props) {
                 <Button
                   onClick={handleDownloadCSV}
                   disabled={isLoading}
-                  className="rounded-xl bg-transparent text-blue-600 hover:bg-transparent"
+                  className="rounded-xl bg-transparent text-blue-600 hover:bg-transparent text-filter_section-downloadBtn font-semibold"
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="h-4 w-4" />
                   Download CSV
                 </Button>
               </div>
@@ -1098,8 +1098,8 @@ export function ProductAnalysis({ storeId, stores }: Props) {
 
                 <div className="flex items-center gap-5">
                   <div className="text-sm">
-                    {selected.length} product
-                    {selected.length !== 1 ? 's' : ''} selected
+                    {selected.length} Product
+                    {selected.length <= 1 ? '' : 's'} Selected
                   </div>
                   <Button
                     onClick={() => {

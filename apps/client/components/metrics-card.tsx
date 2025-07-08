@@ -53,11 +53,11 @@ function MetricCard({ title, value, format, loading, img, colors }: Props) {
             {loading ? (
               <Skeleton className="h-6 w-12 mb-1" />
             ) : (
-              <h3 className={`text-catalogue_primary-background text-2xl font-bold`}>
+              <h3 className={`text-catalogue_primary-background text-2xl font-extrabold`}>
                 {formattedValue()}
               </h3>
             )}
-            <p className={`text-sm font-medium mt-1 text-catalogue_primary-subTitle`}>{title}</p>
+            <p className={`text-sm font-medium mt-1 text-catalogue_primary-subTitle/50`}>{title}</p>
           </div>
           <div className={`h-14 w-14 rounded-full flex items-center justify-center`}>
             {img && <Image src={img} alt={title} width={44} height={44} />}
