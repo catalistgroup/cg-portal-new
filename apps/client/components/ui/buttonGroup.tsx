@@ -22,7 +22,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ isLoading = false }) => {
 
   const handleClick = (label: string) => {
     setSelected(label);
-    alert(label);
+    alert('Functionality pending !');
   };
 
   return (

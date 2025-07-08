@@ -45,6 +45,9 @@ import {
 import APIConfiguration from '@/lib/endpoints';
 import { BrandType } from '@/types';
 import ButtonGroup from '../ui/buttonGroup';
+import NewBrand from '../../public/new_brand.svg';
+import TotalBrand from '../../public/total_brand.svg';
+import TotalProduct from '../../public/total_product.svg';
 
 interface OrderFormState {
   paymentMethod: string;
@@ -607,7 +610,7 @@ export function ProductAnalysis({ storeId, stores }: Props) {
             value={overview.brandsAdded}
             format="count"
             loading={isLoading}
-            icon={<Calculator />}
+            img={NewBrand}
             colors={{
               iconColor: 'text-yellow-600',
               valueColor: 'text-yellow-600',
@@ -618,7 +621,7 @@ export function ProductAnalysis({ storeId, stores }: Props) {
             value={overview.totalBrands}
             format="count"
             loading={isLoading}
-            icon={<Calculator />}
+            img={TotalBrand}
             colors={{
               iconColor: 'text-pink-600',
               valueColor: 'text-pink-600',
@@ -629,7 +632,7 @@ export function ProductAnalysis({ storeId, stores }: Props) {
             value={overview.totalProducts}
             format="count"
             loading={isLoading}
-            icon={<Calculator />}
+            img={TotalProduct}
             colors={{
               iconColor: 'text-red-600',
               valueColor: 'text-red-600',

@@ -101,7 +101,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
               value={state.priceComparator}
               onValueChange={(v) => dispatch({ type: 'SET_PRICE_COMPARATOR', payload: v })}
             >
-              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-black/10">
+              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-0">
                 {state.priceComparator}
               </SelectTrigger>
               <SelectContent>
@@ -156,7 +156,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
               value={state.profitComparator}
               onValueChange={(v) => dispatch({ type: 'SET_PROFIT_COMPARATOR', payload: v })}
             >
-              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-black/10">
+              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-0">
                 {state.profitComparator}
               </SelectTrigger>
               <SelectContent>
@@ -217,7 +217,7 @@ export default function FilterComponent({ onFiltered, onCleared, brands }: Props
               value={state.marginComparator}
               onValueChange={(v) => dispatch({ type: 'SET_MARGIN_COMPARATOR', payload: v })}
             >
-              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-black/10">
+              <SelectTrigger className="w-20 rounded-l-full border-r-0 border-0">
                 {state.marginComparator}
               </SelectTrigger>
               <SelectContent>
