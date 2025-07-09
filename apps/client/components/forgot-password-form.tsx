@@ -1,62 +1,56 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
-import { redirect, useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Alert } from "@/components/ui/alert";
-import { AlertCircle, ChevronLeft } from "lucide-react";
-import api from "@/lib/api";
+import { useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Image from 'next/image';
+import { redirect, useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
+import { AlertCircle, ChevronLeft } from 'lucide-react';
+import api from '@/lib/api';
 
 const forgotPasswordSchema = z.object({
-  email: z.string().nonempty("Email is required").email("Invalid email"),
+  email: z.string().nonempty('Email is required').email('Invalid email'),
 });
 
 type ForgotPasswordFormType = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordForm() {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [isSent, setIsSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ForgotPasswordFormType>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: "",
+      email: '',
     },
   });
 
-  const watchedEmail = useWatch({ control: form.control, name: "email" });
+  const watchedEmail = useWatch({ control: form.control, name: 'email' });
 
   useEffect(() => {
     if (watchedEmail) {
-      setError("");
+      setError('');
     }
   }, [watchedEmail]);
 
   const onSubmit = async (values: ForgotPasswordFormType) => {
-    setError("");
+    setError('');
     setIsLoading(true);
     try {
       const hostname = window.location.hostname;
-      await api.post("/auth/forgot-password", { ...values, hostname });
-      sessionStorage.setItem("resetEmail", values.email);
-      router.push("/otp-verification");
+      await api.post('/auth/forgot-password', { ...values, hostname });
+      sessionStorage.setItem('resetEmail', values.email);
+      router.push('/otp-verification');
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to send reset code.");
+      setError(err?.response?.data?.message || 'Failed to send reset code.');
     } finally {
       setIsLoading(false);
     }
@@ -74,15 +68,12 @@ export default function ForgotPasswordForm() {
       />
       <Card className="w-full max-w-md rounded-2xl shadow-md">
         <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">
-            Forgot Password?
-          </CardTitle>
+          <CardTitle className="text-center text-2xl font-bold">Forgot Password?</CardTitle>
           <CardDescription className="text-center text-muted-foreground">
             Enter your email, and we'll send a verification code to reset your password.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-
+        <CardContent className="space-y-4 p-6 pt-0">
           {error && (
             <Alert variant="destructive" className="flex justify-between items-center">
               <AlertCircle />
@@ -98,15 +89,20 @@ export default function ForgotPasswordForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input className="mt-0.5 mb-2"
+                <Input
+                  className="mt-0.5 mb-2"
                   id="email"
                   type="email"
                   placeholder="Enter email address"
-                  {...form.register("email")}
+                  {...form.register('email')}
                 />
               </div>
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-                {isLoading ? "Sending..." : "Submit"}
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Sending...' : 'Submit'}
               </Button>
             </form>
           )}

@@ -187,10 +187,6 @@ class CatalogImportProcessor {
   }
 
   async processBatch(batch: CatalogImport[]): Promise<void> {
-    // const promises = batch.map((record: CatalogImport) =>
-    //   this.processRecord(record),
-    // );
-
     for (const record of batch) {
       try {
         await this.processRecord(record);
@@ -199,17 +195,6 @@ class CatalogImportProcessor {
         this.stats.errors++;
       }
     }
-    // const results = await Promise.allSettled(promises);
-
-    // results.forEach((result, index) => {
-    //   if (result.status === "rejected") {
-    //     console.error(
-    //       `Error processing record ${batch[index].id}:`,
-    //       result.reason,
-    //     );
-    //     this.stats.errors++;
-    //   }
-    // });
   }
 
   async processRecord(importRecord: CatalogImport): Promise<void> {
@@ -234,7 +219,7 @@ class CatalogImportProcessor {
           this.stats.updated++;
         } else {
           // Create new record with brand resolution
-          await this.createNewCatalog(importRecord);
+          await this.createNewCatalogItem(importRecord);
           this.stats.created++;
         }
 
@@ -343,8 +328,7 @@ class CatalogImportProcessor {
       },
     });
   }
-  // TODO : createNewCatalogItem
-  async createNewCatalog(importRecord: CatalogImport): Promise<void> {
+  async createNewCatalogItem(importRecord: CatalogImport): Promise<void> {
     // Resolve brand_id and brand name based on brand name and merged_to logic
     const brandResolution = await this.resolveBrandId(importRecord.brand);
 
