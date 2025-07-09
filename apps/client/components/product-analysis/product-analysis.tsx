@@ -1069,7 +1069,7 @@ export function ProductAnalysis({ storeId, stores }: Props) {
               />
 
               {/* Searchbar & download btn  */}
-              <div className="relative flex flex-row items-center sm:justify-between gap-3 px-6">
+              <div className="relative flex flex-row items-center sm:justify-between gap-3 px-6 mt-6">
                 <div className="relative sm:max-w-[500px] w-full">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-black" />
                   <Input
