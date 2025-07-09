@@ -1069,25 +1069,27 @@ export function ProductAnalysis({ storeId, stores }: Props) {
               />
 
               {/* Searchbar & download btn  */}
-              <div className="relative flex items-end justify-between gap-3 p-6">
-                <div className="relative max-w-[500px] w-full">
+              <div className="relative flex flex-row items-center sm:justify-between gap-3 px-6 mt-6">
+                <div className="relative sm:max-w-[500px] w-full">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-black" />
                   <Input
                     type="search"
                     placeholder="Search products"
-                    className="min-w-80 pl-9 rounded-xl border-black/10 w-full"
+                    className="sm:min-w-80 pl-9 rounded-xl border-black/10 w-full"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Button
-                  onClick={handleDownloadCSV}
-                  disabled={isLoading}
-                  className="rounded-xl bg-transparent text-blue-600 hover:bg-transparent text-filter_section-downloadBtn font-semibold"
-                >
-                  <Download className="h-4 w-4" />
-                  Download CSV
-                </Button>
+                <div className="flex justify-center sm:justify-end">
+                  <Button
+                    onClick={handleDownloadCSV}
+                    disabled={isLoading}
+                    className="rounded-xl bg-transparent pr-0 pl-0 text-blue-600 hover:bg-transparent text-filter_section-downloadBtn font-semibold"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download CSV
+                  </Button>
+                </div>
               </div>
 
               {/* preset btns and create order btn */}

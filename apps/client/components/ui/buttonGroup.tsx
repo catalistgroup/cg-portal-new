@@ -26,18 +26,20 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ isLoading = false }) => {
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-wrap flex-col md:flex-row items-center ">
       {buttons.map(({ label, img }) => (
         <div
           key={label}
           onClick={() => handleClick(label)}
-          className="inline-flex items-center justify-center p-[1px] rounded-md bg-gradient-to-r from-[#F208FD] to-[#0B24FB] cursor-pointer"
+          className={`inline-flex items-center justify-center h-fit rounded-[8px] p-px cursor-pointer ${
+            selected === label
+              ? 'bg-filter_section-selectedBtn'
+              : 'bg-gradient-to-r from-[#F208FD] to-[#0B24FB]'
+          }`}
         >
           <div
-            className={`flex items-center gap-2 rounded-md px-4 py-1 ${
-              selected === label
-                ? 'bg-filter_section-selectedBtn text-white border border-transparent'
-                : 'bg-white'
+            className={`flex items-center gap-2 rounded-[7px] px-4 py-1 ${
+              selected === label ? 'bg-filter_section-selectedBtn text-white' : 'bg-white'
             }`}
           >
             {img && (
@@ -56,7 +58,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ isLoading = false }) => {
               className={`text-sm font-medium ${
                 selected === label
                   ? 'text-white'
-                  : 'text-transparent bg-clip-text bg-gradient-to-r from-[rgba(242,8,253,1)] to-[rgba(11,36,251,1)]'
+                  : 'text-transparent bg-clip-text whitespace-nowrap bg-gradient-to-r from-[rgba(242,8,253,1)] to-[rgba(11,36,251,1)]'
               }`}
             >
               {label}
