@@ -35,6 +35,7 @@ interface Brand {
 interface BrandResolution {
   id: number | null;
   name: string | null;
+  merged_to: number | null;
 }
 
 interface CatalogImport {
@@ -124,7 +125,7 @@ class CatalogImportProcessor {
       }
 
       // Load brand cache
-      await this.loadBrandCache();
+      // await this.loadBrandCache();
 
       // Process records in batches
       let offset = 0;
@@ -186,20 +187,29 @@ class CatalogImportProcessor {
   }
 
   async processBatch(batch: CatalogImport[]): Promise<void> {
-    const promises = batch.map((record: CatalogImport) =>
-      this.processRecord(record),
-    );
-    const results = await Promise.allSettled(promises);
+    // const promises = batch.map((record: CatalogImport) =>
+    //   this.processRecord(record),
+    // );
 
-    results.forEach((result, index) => {
-      if (result.status === "rejected") {
-        console.error(
-          `Error processing record ${batch[index].id}:`,
-          result.reason,
-        );
+    for (const record of batch) {
+      try {
+        await this.processRecord(record);
+      } catch (error) {
+        console.error(`Error processing record ${record.id}:`, error);
         this.stats.errors++;
       }
-    });
+    }
+    // const results = await Promise.allSettled(promises);
+
+    // results.forEach((result, index) => {
+    //   if (result.status === "rejected") {
+    //     console.error(
+    //       `Error processing record ${batch[index].id}:`,
+    //       result.reason,
+    //     );
+    //     this.stats.errors++;
+    //   }
+    // });
   }
 
   async processRecord(importRecord: CatalogImport): Promise<void> {
@@ -333,7 +343,7 @@ class CatalogImportProcessor {
       },
     });
   }
-
+  // TODO : createNewCatalogItem
   async createNewCatalog(importRecord: CatalogImport): Promise<void> {
     // Resolve brand_id and brand name based on brand name and merged_to logic
     const brandResolution = await this.resolveBrandId(importRecord.brand);
@@ -350,6 +360,7 @@ class CatalogImportProcessor {
         asin: importRecord.asin,
         name: importRecord.name,
         brand: brandResolution.name || importRecord.brand, // if brand not find use brand name from importRecord
+        brand_id: brandResolution.merged_to || brandResolution.id,
         buying_price: importRecord.buying_price,
         selling_price: calculatedResult.selling_price?.toString?.(),
         sku: importRecord.sku,
@@ -370,7 +381,6 @@ class CatalogImportProcessor {
         walmart_margin: importRecord.walmart_margin,
         walmart_roi: importRecord.walmart_roi,
         profitable: calculatedResult?.profitable || false,
-        brand_id: brandResolution.id,
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -406,51 +416,23 @@ class CatalogImportProcessor {
   }
 
   async resolveBrandId(brandName: string): Promise<BrandResolution> {
-    if (!brandName) return { id: null, name: null };
+    if (!brandName) return { id: null, name: null, merged_to: null };
 
-    const brand = this.brandCache.get(brandName);
+    const brand = await prisma.brand.findFirst({
+      where: { name: brandName },
+    });
+
+    console.log("Brand Found ", brand, "Nanme ==>", brand?.name);
 
     if (!brand) {
-      // Brand not found, create new brand
+      // Create new brand
       const newBrand = await prisma.brand.create({
-        data: {
-          name: brandName,
-          profitable_and_selling: 0,
-          all_catalog_count: 0,
-          last_item_inserted_at: new Date(),
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
+        data: { name: brandName },
       });
-
-      // Add to cache
-      this.brandCache.set(brandName, newBrand);
-      return { id: newBrand.id, name: newBrand.name };
+      return newBrand;
     }
 
-    // If brand has merged_to, find the target brand name
-    if (brand.merged_to) {
-      // Find the target brand in cache
-      const targetBrand = Array.from(this.brandCache.values()).find(
-        (b) => b.id === brand.merged_to,
-      );
-      if (targetBrand) {
-        return { id: brand.merged_to, name: targetBrand.name };
-      }
-
-      // If not in cache, fetch from database
-      const targetBrandFromDb = await prisma.brand.findUnique({
-        where: { id: brand.merged_to },
-        select: { id: true, name: true },
-      });
-
-      if (targetBrandFromDb) {
-        return { id: targetBrandFromDb.id, name: targetBrandFromDb.name };
-      }
-    }
-
-    // Return current brand
-    return { id: brand.id, name: brand.name };
+    return brand;
   }
 
   async logStats(): Promise<void> {
