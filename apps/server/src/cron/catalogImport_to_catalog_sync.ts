@@ -187,20 +187,29 @@ class CatalogImportProcessor {
   }
 
   async processBatch(batch: CatalogImport[]): Promise<void> {
-    const promises = batch.map((record: CatalogImport) =>
-      this.processRecord(record),
-    );
-    const results = await Promise.allSettled(promises);
+    // const promises = batch.map((record: CatalogImport) =>
+    //   this.processRecord(record),
+    // );
 
-    results.forEach((result, index) => {
-      if (result.status === "rejected") {
-        console.error(
-          `Error processing record ${batch[index].id}:`,
-          result.reason,
-        );
+    for (const record of batch) {
+      try {
+        await this.processRecord(record);
+      } catch (error) {
+        console.error(`Error processing record ${record.id}:`, error);
         this.stats.errors++;
       }
-    });
+    }
+    // const results = await Promise.allSettled(promises);
+
+    // results.forEach((result, index) => {
+    //   if (result.status === "rejected") {
+    //     console.error(
+    //       `Error processing record ${batch[index].id}:`,
+    //       result.reason,
+    //     );
+    //     this.stats.errors++;
+    //   }
+    // });
   }
 
   async processRecord(importRecord: CatalogImport): Promise<void> {
@@ -413,7 +422,7 @@ class CatalogImportProcessor {
       where: { name: brandName },
     });
 
-    console.log("Brand Found ", brand);
+    console.log("Brand Found ", brand, "Nanme ==>", brand?.name);
 
     if (!brand) {
       // Create new brand
