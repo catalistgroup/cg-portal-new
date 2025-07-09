@@ -456,6 +456,7 @@ export class AdminController {
           },
           data: {
             brand: activeBrandName,
+            brand_id: activeBrandId,
             updated_at: new Date(),
           },
         });
