@@ -128,6 +128,16 @@ model Brand {
   catalogs                  Catalog[]
 }
 
+model Wishlist {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  catalog_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, catalog_id])
+}
+
 model CatalogImport {
   id             Int      @id @default(autoincrement())
   asin           String   @unique

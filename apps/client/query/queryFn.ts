@@ -75,3 +75,18 @@ export const getAllBrands = () =>
   api.get(APIConfiguration.GET_ALL_BRANDS_ADMIN).then((v) => {
     return v.data;
   });
+
+export const getWishlist = async () => {
+  const res = await api.get(APIConfiguration.WISHLIST);
+  return res.data;
+};
+
+export const addToWishlist = async (catalogId: number) => {
+  const res = await api.post(APIConfiguration.WISHLIST, { catalogId });
+  return res.data;
+};
+
+export const removeFromWishlist = async (catalogId: number) => {
+  const res = await api.delete(`${APIConfiguration.WISHLIST}/${catalogId}`);
+  return res.data;
+};

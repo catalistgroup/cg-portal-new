@@ -8,39 +8,7 @@ export class CatalogController {
 
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     try {
-      const catalogs = await prisma.$queryRaw`
-      WITH brand_order AS (
-        SELECT 
-          id AS brand_id,
-          name AS brand_name,
-          last_item_inserted_at,
-          ROW_NUMBER() OVER (ORDER BY last_item_inserted_at DESC) AS sort_order
-        FROM "Brand"
-      )
-      SELECT 
-        c.id,
-        c.asin,
-        c.name,
-        b.brand_name AS brand,
-        c.selling_price,
-        c.sku,
-        c.upc,
-        c.moq,
-        c.buybox_price,
-        c.amazon_fee,
-        c.profit,
-        c.margin,
-        c.roi,
-        c.image_url,
-        c.created_at,
-        c.supplier,
-        b.last_item_inserted_at
-      FROM "Catalog" c
-      JOIN brand_order b ON c.brand_id = b.brand_id
-      WHERE c.profitable = true AND c.selling_status = true
-      ORDER BY b.sort_order, c.created_at DESC
-    `;
-
+      const catalogs = await this.fetchCatalogs(req);
       res.json(catalogs);
     } catch (error) {
       console.error(error);
@@ -67,17 +35,32 @@ export class CatalogController {
         throw new HttpError("Store not found or access denied", 404);
       }
 
-      const catalogs = await prisma.catalog.findMany({
-        orderBy: {
-          created_at: "desc",
-        },
-      });
+      const catalogs = await this.fetchCatalogs(req);
       res.status(200).json(catalogs);
     } catch (error) {
       console.error(error);
       if (error instanceof HttpError) throw error;
       throw new HttpError("Failed to fetch catalogs", 500);
     }
+  }
+
+  private async fetchCatalogs(req: Request) {
+    const { sortBy } = req.query;
+    let orderBy: any = { created_at: "desc" };
+    let where: any = {};
+
+    if (sortBy === "new") {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      where.created_at = { gte: sevenDaysAgo };
+    } else if (sortBy === "top") {
+      // Placeholder for top movers
+      orderBy = { name: "asc" };
+    }
+
+    return prisma.catalog.findMany({
+      where,
+      orderBy,
+    });
   }
 
   async getCatalogById(req: Request, res: Response) {
@@ -183,6 +166,69 @@ export class CatalogController {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Failed to retrieve brands" });
+    }
+  }
+
+  async addToWishlist(req: Request, res: Response) {
+    const userId = req.user?.id;
+    const { catalogId } = req.body;
+
+    if (!userId) throw new HttpError("Authorization failed", 401);
+
+    try {
+      const wishlistItem = await prisma.wishlist.create({
+        data: {
+          user_id: userId,
+          catalog_id: catalogId,
+        },
+      });
+      res.status(201).json(wishlistItem);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to add to wishlist" });
+    }
+  }
+
+  async removeFromWishlist(req: Request, res: Response) {
+    const userId = req.user?.id;
+    const catalogId = Number(req.params.catalogId);
+
+    if (!userId) throw new HttpError("Authorization failed", 401);
+
+    try {
+      await prisma.wishlist.delete({
+        where: {
+          user_id_catalog_id: {
+            user_id: userId,
+            catalog_id: catalogId,
+          },
+        },
+      });
+      res.status(204).send();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to remove from wishlist" });
+    }
+  }
+
+  async getWishlist(req: Request, res: Response) {
+    const userId = req.user?.id;
+
+    if (!userId) throw new HttpError("Authorization failed", 401);
+
+    try {
+      const wishlist = await prisma.wishlist.findMany({
+        where: {
+          user_id: userId,
+        },
+        include: {
+          catalog: true,
+        },
+      });
+      res.json(wishlist.map((item) => item.catalog));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to fetch wishlist" });
     }
   }
 }

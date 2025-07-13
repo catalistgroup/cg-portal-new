@@ -17,6 +17,21 @@ router.get(
   asyncHandler(catalogController.getAllQualifiedBrands.bind(catalogController)),
 );
 
+router.post(
+  "/wishlist",
+  asyncHandler(catalogController.addToWishlist.bind(catalogController)),
+);
+
+router.delete(
+  "/wishlist/:catalogId",
+  asyncHandler(catalogController.removeFromWishlist.bind(catalogController)),
+);
+
+router.get(
+  "/wishlist",
+  asyncHandler(catalogController.getWishlist.bind(catalogController)),
+);
+
 // router.get("/:id", authenticate, (req, res) =>
 //   catalogController.getCatalogById(req, res),
 // );

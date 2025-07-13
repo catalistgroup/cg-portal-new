@@ -7,8 +7,13 @@ import { cn } from "@/lib/utils";
 
 type Props = { storeId: string };
 
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+
 export default function StorePage({ storeId }: Props) {
   const { user } = useRoot();
+  const searchParams = useSearchParams();
+  const sortBy = searchParams.get("sortBy");
 
   return (
     <div
@@ -20,7 +25,14 @@ export default function StorePage({ storeId }: Props) {
       <DashboardOverview storeId={storeId} />
 
       <section className="w-full overflow-x-auto">
-        <h2 className="text-xl font-semibold mb-4">Active Products</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Active Products</h2>
+          <div className="flex items-center gap-4">
+            <Link href={`/store/${storeId}`}>All</Link>
+            <Link href={`/store/${storeId}?sortBy=new`}>New This Week</Link>
+            <Link href={`/store/${storeId}?sortBy=top`}>Top Movers</Link>
+          </div>
+        </div>
         <ProductsTable storeId={storeId} />
       </section>
     </div>
