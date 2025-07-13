@@ -1,14 +1,18 @@
 import StorePage from "@/components/store-page";
+import { ProductsTable } from "@/components/products-table";
 
 type Props = {
-  params: Promise<{ storeId: string }>;
+  params: { storeId: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
-export default async function Page({ params }: Props) {
-  // In a real app, you would fetch store data based on the storeId
-  const { storeId } = await params;
+export default function Page({ params, searchParams }: Props) {
+  const { storeId } = params;
+  const { sortBy } = searchParams;
 
-  return (<div className="px-4">
-    <StorePage storeId={storeId} />;
-  </div>)
+  return (
+    <div className="px-4">
+      <StorePage storeId={storeId} />
+    </div>
+  );
 }

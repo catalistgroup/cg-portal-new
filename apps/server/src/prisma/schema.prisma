@@ -70,6 +70,7 @@ model Catalog {
   profitable     Boolean  @default(false)
   brand_id       Int?
   brands         Brand? @relation(fields: [brand_id], references: [id])
+  stock_level    Int?
 }
 
 model PurchaseOrder {
@@ -126,6 +127,16 @@ model Brand {
   created_at                DateTime @default(now()) @db.Timestamp(6)
   updated_at                DateTime @default(now()) @updatedAt @db.Timestamp(6)
   catalogs                  Catalog[]
+}
+
+model Wishlist {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  catalog_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, catalog_id])
 }
 
 model CatalogImport {
