@@ -70,7 +70,6 @@ model Catalog {
   profitable     Boolean  @default(false)
   brand_id       Int?
   brands         Brand? @relation(fields: [brand_id], references: [id])
-  stock_level    Int?
 }
 
 model PurchaseOrder {
