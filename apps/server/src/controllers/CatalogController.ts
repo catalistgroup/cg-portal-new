@@ -231,4 +231,49 @@ export class CatalogController {
       res.status(500).json({ message: "Failed to fetch wishlist" });
     }
   }
+
+  async getTopSellers(req: Request, res: Response) {
+    const userId = req.user?.id;
+    if (!userId) throw new HttpError("Authorization failed", 401);
+
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const topSellers = await prisma.purchaseOrderItem.groupBy({
+        by: ["catalog_id"],
+        where: {
+          purchase_order: {
+            created_at: {
+              gte: sevenDaysAgo,
+            },
+          },
+        },
+        _count: {
+          catalog_id: true,
+        },
+        orderBy: {
+          _count: {
+            catalog_id: "desc",
+          },
+        },
+        take: 10,
+      });
+
+      const catalogIds = topSellers.map((item) => item.catalog_id);
+
+      const catalogs = await prisma.catalog.findMany({
+        where: {
+          id: {
+            in: catalogIds,
+          },
+        },
+      });
+
+      res.json(catalogs);
+    } catch (error) {
+      console.error(error);
+      if (error instanceof HttpError) throw error;
+      throw new HttpError("Failed to fetch top sellers", 500);
+    }
+  }
 }

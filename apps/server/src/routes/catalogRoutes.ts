@@ -32,6 +32,11 @@ router.get(
   asyncHandler(catalogController.getWishlist.bind(catalogController)),
 );
 
+router.get(
+  "/top-sellers",
+  asyncHandler(catalogController.getTopSellers.bind(catalogController)),
+);
+
 // router.get("/:id", authenticate, (req, res) =>
 //   catalogController.getCatalogById(req, res),
 // );
