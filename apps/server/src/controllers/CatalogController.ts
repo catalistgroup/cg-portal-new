@@ -280,4 +280,35 @@ export class CatalogController {
   async getRecommendations(req: Request, res: Response) {
     return this.getTopSellers(req, res);
   }
+
+  async getNewArrivals(req: Request, res: Response) {
+    const userId = req.user?.id;
+    if (!userId) throw new HttpError("Authorization failed", 401);
+
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const newArrivals = await prisma.catalog.findMany({
+        where: {
+          created_at: {
+            gte: sevenDaysAgo,
+          },
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+        take: 10,
+      });
+
+      res.json(newArrivals);
+    } catch (error) {
+      console.error(error);
+      if (error instanceof HttpError) throw error;
+      throw new HttpError("Failed to fetch new arrivals", 500);
+    }
+  }
+
+  async getFeatured(req: Request, res: Response) {
+    return this.getTopSellers(req, res);
+  }
 }
