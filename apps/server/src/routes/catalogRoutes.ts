@@ -37,6 +37,11 @@ router.get(
   asyncHandler(catalogController.getTopSellers.bind(catalogController)),
 );
 
+router.get(
+  "/recommendations",
+  asyncHandler(catalogController.getRecommendations.bind(catalogController)),
+);
+
 // router.get("/:id", authenticate, (req, res) =>
 //   catalogController.getCatalogById(req, res),
 // );

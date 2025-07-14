@@ -1,6 +1,7 @@
 const APIConfiguration = {
   GET_ALL_LIVE_CATALOG: 'catalog/live-catalog',
   GET_TOP_SELLERS: 'catalog/top-sellers',
+  GET_RECOMMENDATIONS: 'catalog/recommendations',
   GET_ALL_QUALIFIED_BRANDS: 'catalog/get-qualified-brands',
   WISHLIST: 'catalog/wishlist',
   // Admin

@@ -276,4 +276,8 @@ export class CatalogController {
       throw new HttpError("Failed to fetch top sellers", 500);
     }
   }
+
+  async getRecommendations(req: Request, res: Response) {
+    return this.getTopSellers(req, res);
+  }
 }
